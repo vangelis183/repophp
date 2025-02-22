@@ -2,4 +2,6 @@
 
 namespace Vangelis\RepoPHP;
 
-class RepoPHPClass {}
+class RepoPHPClass
+{
+}
