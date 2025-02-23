@@ -1,0 +1,21 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+namespace RepoPHP;
+
+use Exception;
+use Symfony\Component\Console\Application;
+use Vangelis\RepoPHP\Command\PackCommand;
+
+require __DIR__ . '/../vendor/autoload.php';
+
+$application = new Application('RepoPHP', '1.0.0');
+$application->add(new PackCommand());
+
+try {
+    $application->run();
+} catch (Exception $e) {
+    return $e->getCode();
+}
