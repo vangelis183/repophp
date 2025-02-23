@@ -16,6 +16,7 @@ class XmlFormatter extends BaseFormatter
     public function getHeader(): string
     {
         $dateTime = $this->getDateTime();
+
         return <<<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <repository>

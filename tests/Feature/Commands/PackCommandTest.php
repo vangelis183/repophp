@@ -1,9 +1,9 @@
 <?php
 
 use Symfony\Component\Console\Application;
-use Symfony\Component\Console\Tester\CommandTester;
-use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Exception\RuntimeException;
+use Symfony\Component\Console\Tester\CommandTester;
 use Vangelis\RepoPHP\Command\PackCommand;
 
 beforeEach(function () {
@@ -56,7 +56,7 @@ test('it packs repository successfully with minimal required arguments', functio
     $commandTester = new CommandTester($this->command);
     $exitCode = $commandTester->execute([
         'repository' => $this->tmpRepo,
-        'output'     => $this->tmpOutput,
+        'output' => $this->tmpOutput,
     ]);
 
     expect($exitCode)->toBe(Command::SUCCESS);
@@ -76,7 +76,7 @@ test('it packs repository successfully when output file exists and user declines
 
     $exitCode = $commandTester->execute([
         'repository' => $this->tmpRepo,
-        'output'     => $this->tmpOutput,
+        'output' => $this->tmpOutput,
     ]);
 
     expect($exitCode)->toBe(Command::SUCCESS);
@@ -93,8 +93,8 @@ test('it packs repository with the custom --format option', function () {
     $commandTester = new CommandTester($this->command);
     $exitCode = $commandTester->execute([
         'repository' => $this->tmpRepo,
-        'output'     => $this->tmpOutput,
-        '--format'   => 'json',
+        'output' => $this->tmpOutput,
+        '--format' => 'json',
     ]);
 
     expect($exitCode)->toBe(Command::SUCCESS);
@@ -111,8 +111,8 @@ test('it packs repository with the custom --exclude option (single and multiple 
     // Test with a single exclusion pattern
     $exitCodeSingle = $commandTester->execute([
         'repository' => $this->tmpRepo,
-        'output'     => $this->tmpOutput,
-        '--exclude'  => ['*.log'],
+        'output' => $this->tmpOutput,
+        '--exclude' => ['*.log'],
     ]);
 
     expect($exitCodeSingle)->toBe(Command::SUCCESS);
@@ -123,8 +123,8 @@ test('it packs repository with the custom --exclude option (single and multiple 
     $commandTester = new CommandTester($this->command);
     $exitCodeMultiple = $commandTester->execute([
         'repository' => $this->tmpRepo,
-        'output'     => $this->tmpOutput,
-        '--exclude'  => ['*.log', '*.tmp'],
+        'output' => $this->tmpOutput,
+        '--exclude' => ['*.log', '*.tmp'],
     ]);
 
     expect($exitCodeMultiple)->toBe(Command::SUCCESS);
@@ -139,8 +139,8 @@ test('it packs repository with the --no-gitignore option', function () {
 
     $commandTester = new CommandTester($this->command);
     $exitCode = $commandTester->execute([
-        'repository'    => $this->tmpRepo,
-        'output'        => $this->tmpOutput,
+        'repository' => $this->tmpRepo,
+        'output' => $this->tmpOutput,
         '--no-gitignore' => true,
     ]);
 
