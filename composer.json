@@ -18,11 +18,13 @@
     ],
     "require": {
         "php": "^8.3",
-        "symfony/finder": "^7.2"
+        "symfony/finder": "^7.2",
+        "symfony/process": "^7.2"
     },
     "require-dev": {
-        "pestphp/pest": "^3.0",
-        "friendsofphp/php-cs-fixer": "^3.21.1"
+        "friendsofphp/php-cs-fixer": "^3.21.1",
+        "mockery/mockery": "^1.6",
+        "pestphp/pest": "^3.0"
     },
     "autoload": {
         "psr-4": {

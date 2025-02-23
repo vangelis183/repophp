@@ -10,9 +10,12 @@ class JsonFormatter extends BaseFormatter
 
     private ?OutputInterface $output;
 
-    public function __construct(?OutputInterface $output = null)
+    private ?array $gitInfo;
+
+    public function __construct(?OutputInterface $output = null, ?array $gitInfo = null)
     {
         $this->output = $output;
+        $this->gitInfo = $gitInfo;
     }
 
     public function getHeader(): string
@@ -26,6 +29,7 @@ class JsonFormatter extends BaseFormatter
             'metadata' => [
                 'generated_at' => $this->getDateTime(),
                 'file_count' => count($this->files),
+                'git_info' => $this->gitInfo ?? null,
             ],
             'files' => $this->files,
         ];
