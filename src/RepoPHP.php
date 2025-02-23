@@ -8,9 +8,10 @@ use InvalidArgumentException;
 use RuntimeException;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Finder\Finder;
-use Vangelis\RepoPHP\Formatters\JsonFormatter;
-use Vangelis\RepoPHP\Formatters\MarkdownFormatter;
+use Vangelis\RepoPHP\Formatters\XmlFormatter;
 use Vangelis\RepoPHP\Formatters\PlainTextFormatter;
+use Vangelis\RepoPHP\Formatters\MarkdownFormatter;
+use Vangelis\RepoPHP\Formatters\JsonFormatter;
 
 class RepoPHP
 {
@@ -20,10 +21,13 @@ class RepoPHP
 
     private const string FORMAT_JSON = 'json';
 
+    private const string FORMAT_XML = 'xml';
+
     private const array SUPPORTED_FORMATS = [
         self::FORMAT_PLAIN,
         self::FORMAT_MARKDOWN,
         self::FORMAT_JSON,
+        self::FORMAT_XML,
     ];
 
     private const int CHUNK_SIZE = 8192; // 8KB chunks for streaming
@@ -104,10 +108,8 @@ class RepoPHP
     private function validateFormat(string $format): void
     {
         if (! in_array($format, self::SUPPORTED_FORMATS, true)) {
-            throw new InvalidArgumentException("Unsupported format '$format'. Supported formats: ".implode(
-                ', ',
-                self::SUPPORTED_FORMATS
-            ));
+            throw new InvalidArgumentException("Unsupported format '$format'. Supported formats: ".implode(', ',
+                    self::SUPPORTED_FORMATS));
         }
     }
 
@@ -135,7 +137,7 @@ class RepoPHP
             foreach ($files as $file) {
                 $this->processFile($file, $outputHandle);
             }
-            if ($this->format === self::FORMAT_JSON) {  // or however you check for JSON format
+            if ($this->format === self::FORMAT_JSON) {
                 $this->writeJsonFooter($outputHandle);
             } else {
                 $this->writeFooter($outputHandle);
@@ -173,8 +175,6 @@ class RepoPHP
             return;
         }
 
-
-
         $relativePath = substr($filePath, strlen($this->repositoryPath) + 1);
 
         switch ($this->format) {
@@ -188,17 +188,32 @@ class RepoPHP
                 break;
             case self::FORMAT_JSON:
                 $this->writeFileJson($relativePath, $filePath, $outputHandle);
+                break;
+
+            case self::FORMAT_XML:
+                $this->writeFileXml($relativePath, $filePath, $outputHandle);
 
                 break;
         }
-
-
-
     }
 
     private function writeFilePlain(string $relativePath, string $filePath, $outputHandle): void
     {
         $formatter = new PlainTextFormatter($this->output);
+
+        $content = file_get_contents($filePath);
+
+        // Format the file content
+        $formattedContent = $formatter->formatFile($relativePath, $content);
+
+        // Write to the output handle
+        fwrite($outputHandle, $formattedContent);
+        fwrite($outputHandle, $formatter->getSeparator());
+    }
+
+    private function writeFileXml(string $relativePath, string $filePath, $outputHandle): void
+    {
+        $formatter = new XmlFormatter($this->output);
 
         $content = file_get_contents($filePath);
 
@@ -237,6 +252,7 @@ class RepoPHP
             self::FORMAT_PLAIN => new PlainTextFormatter($this->output),
             self::FORMAT_MARKDOWN => new MarkdownFormatter($this->output),
             self::FORMAT_JSON => new JsonFormatter($this->output),
+            self::FORMAT_XML => new XmlFormatter($this->output),
             default => throw new RuntimeException("Unsupported format: {$this->format}")
         };
 
@@ -249,6 +265,7 @@ class RepoPHP
         $formatter = match ($this->format) {
             self::FORMAT_PLAIN => new PlainTextFormatter(),
             self::FORMAT_MARKDOWN => new MarkdownFormatter(),
+            self::FORMAT_XML => new XmlFormatter(),
             default => throw new RuntimeException("Unsupported format: {$this->format}")
         };
 

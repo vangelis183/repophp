@@ -29,7 +29,7 @@ class PackCommand extends Command
             'format',
             'format',
             InputOption::VALUE_REQUIRED,
-            'Output format (plain, markdown, json)',
+            'Output format (plain, markdown, json, xml)',
             'plain'
         )->addOption(
             'exclude',
