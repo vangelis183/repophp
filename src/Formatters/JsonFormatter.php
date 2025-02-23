@@ -15,7 +15,6 @@ class JsonFormatter extends BaseFormatter
         $this->output = $output;
     }
 
-
     public function getHeader(): string
     {
         return '';  // JSON structure will be written in getFooter

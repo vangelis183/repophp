@@ -6,11 +6,11 @@ namespace Vangelis\RepoPHP;
 
 use InvalidArgumentException;
 use RuntimeException;
-use Symfony\Component\Finder\Finder;
-use Vangelis\RepoPHP\Formatters\PlainTextFormatter;
-use Vangelis\RepoPHP\Formatters\MarkdownFormatter;
-use Vangelis\RepoPHP\Formatters\JsonFormatter;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Finder\Finder;
+use Vangelis\RepoPHP\Formatters\JsonFormatter;
+use Vangelis\RepoPHP\Formatters\MarkdownFormatter;
+use Vangelis\RepoPHP\Formatters\PlainTextFormatter;
 
 class RepoPHP
 {
@@ -104,8 +104,10 @@ class RepoPHP
     private function validateFormat(string $format): void
     {
         if (! in_array($format, self::SUPPORTED_FORMATS, true)) {
-            throw new InvalidArgumentException("Unsupported format '$format'. Supported formats: ".implode(', ',
-                    self::SUPPORTED_FORMATS));
+            throw new InvalidArgumentException("Unsupported format '$format'. Supported formats: ".implode(
+                ', ',
+                self::SUPPORTED_FORMATS
+            ));
         }
     }
 
@@ -142,8 +144,7 @@ class RepoPHP
             if ($this->output) {
                 $this->output->writeln('<info>File processing completed.</info>');
             }
-        }
-        finally {
+        } finally {
             fclose($outputHandle);
         }
     }

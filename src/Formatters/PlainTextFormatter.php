@@ -13,7 +13,6 @@ class PlainTextFormatter extends BaseFormatter
         $this->output = $output;
     }
 
-
     public function getHeader(): string
     {
         return $this->getDefaultHeader();
