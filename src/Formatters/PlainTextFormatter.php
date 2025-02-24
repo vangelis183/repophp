@@ -6,11 +6,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class PlainTextFormatter extends BaseFormatter
 {
-    private ?OutputInterface $output;
-
     public function __construct(?OutputInterface $output = null)
     {
-        $this->output = $output;
+        parent::__construct($output);
     }
 
     public function getHeader(): string

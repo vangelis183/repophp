@@ -79,8 +79,7 @@ class PackCommand extends Command
                 $outputPath,
                 $input->getOption('format'),
                 $input->getOption('exclude'),
-                ! $input->getOption('no-gitignore'),
-                $output
+                ! $input->getOption('no-gitignore')
             );
 
             $repoPHP->pack();

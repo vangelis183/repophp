@@ -98,6 +98,7 @@ Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed re
  - [ ] Add option for specific branch
  - [ ] Move settings to configuration
  - [ ] Consider different encodings
+ - [ ] Directory structure
    
   
 ## Contributing  

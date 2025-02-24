@@ -1,0 +1,31 @@
+name: Static Analysis
+
+on:
+  push:
+    paths:
+      - '**.php'
+      - 'phpstan.neon'
+      - '.github/workflows/phpstan.yml'
+      - 'composer.json'
+      - 'composer.lock'
+
+jobs:
+  phpstan:
+    name: PHPStan
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+
+      - name: Install Dependencies
+        run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress
+
+      - name: Run PHPStan
+        run: vendor/bin/phpstan analyse --error-format=github

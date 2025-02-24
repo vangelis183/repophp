@@ -1,149 +1,165 @@
 <?php
 
+namespace Vangelis\RepoPHP\Tests\Feature\Commands;
+
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Tester\CommandTester;
 use Vangelis\RepoPHP\Command\PackCommand;
 
-beforeEach(function () {
-    $this->application = new Application();
-    $this->application->add(new PackCommand());
-    $this->command = $this->application->find('pack');
-});
+class PackCommandTest extends TestCase
+{
+    private Application $application;
+    private Command $command;
+    private ?string $tmpOutput = null;
+    private ?string $tmpRepo = null;
+    private ?string $newFilename = null;
 
-afterEach(function () {
-    // Remove any temporary output file created during tests.
-    if (isset($this->tmpOutput) && file_exists($this->tmpOutput)) {
-        unlink($this->tmpOutput);
+    protected function setUp(): void
+    {
+        $this->application = new Application();
+        $this->application->add(new PackCommand());
+        $this->command = $this->application->find('pack');
     }
-    // Remove any new file created during the overwrite prompt test.
-    if (isset($this->newFilename) && file_exists($this->newFilename)) {
-        unlink($this->newFilename);
+
+    protected function tearDown(): void
+    {
+        if ($this->tmpOutput && file_exists($this->tmpOutput)) {
+            unlink($this->tmpOutput);
+        }
+
+        if ($this->newFilename && file_exists($this->newFilename)) {
+            unlink($this->newFilename);
+        }
+
+        if ($this->tmpRepo && is_dir($this->tmpRepo)) {
+            rmdir($this->tmpRepo);
+        }
     }
-    // Remove temporary repository directory if exists.
-    if (isset($this->tmpRepo) && is_dir($this->tmpRepo)) {
-        rmdir($this->tmpRepo);
+
+    public function testFailsIfRepositoryArgumentIsMissing(): void
+    {
+        $this->tmpOutput = sys_get_temp_dir() . '/tmp_output_' . uniqid() . '.txt';
+        $commandTester = new CommandTester($this->command);
+
+        $this->expectException(RuntimeException::class);
+        $commandTester->execute([
+            'output' => $this->tmpOutput,
+        ]);
     }
-});
 
-test('it fails if repository argument is missing', function () {
-    $this->tmpOutput = sys_get_temp_dir() . '/tmp_output_' . uniqid() . '.txt';
-    $commandTester = new CommandTester($this->command);
-    // Missing the repository argument should throw an exception.
-    $this->expectException(RuntimeException::class);
-    $commandTester->execute([
-        'output' => $this->tmpOutput,
-    ]);
-});
+    public function testFailsIfOutputArgumentIsMissing(): void
+    {
+        $this->tmpRepo = sys_get_temp_dir() . '/tmp_repo_' . uniqid();
+        mkdir($this->tmpRepo);
+        $commandTester = new CommandTester($this->command);
 
-test('it fails if output argument is missing', function () {
-    $this->tmpRepo = sys_get_temp_dir() . '/tmp_repo_' . uniqid();
-    mkdir($this->tmpRepo);
-    $commandTester = new CommandTester($this->command);
-    // Missing the output argument should throw an exception.
-    $this->expectException(RuntimeException::class);
-    $commandTester->execute([
-        'repository' => $this->tmpRepo,
-    ]);
-});
+        $this->expectException(RuntimeException::class);
+        $commandTester->execute([
+            'repository' => $this->tmpRepo,
+        ]);
+    }
 
-test('it packs repository successfully with minimal required arguments', function () {
-    $this->tmpRepo = sys_get_temp_dir() . '/tmp_repo_' . uniqid();
-    mkdir($this->tmpRepo);
-    $this->tmpOutput = sys_get_temp_dir() . '/tmp_output_' . uniqid() . '.txt';
+    public function testPacksRepositorySuccessfullyWithMinimalRequiredArguments(): void
+    {
+        $this->tmpRepo = sys_get_temp_dir() . '/tmp_repo_' . uniqid();
+        mkdir($this->tmpRepo);
+        $this->tmpOutput = sys_get_temp_dir() . '/tmp_output_' . uniqid() . '.txt';
 
-    $commandTester = new CommandTester($this->command);
-    $exitCode = $commandTester->execute([
-        'repository' => $this->tmpRepo,
-        'output' => $this->tmpOutput,
-    ]);
+        $commandTester = new CommandTester($this->command);
+        $exitCode = $commandTester->execute([
+            'repository' => $this->tmpRepo,
+            'output' => $this->tmpOutput,
+        ]);
 
-    expect($exitCode)->toBe(Command::SUCCESS);
-    expect($commandTester->getDisplay())->toContain('Repository packed successfully.');
-});
+        $this->assertEquals(Command::SUCCESS, $exitCode);
+        $this->assertStringContainsString('Repository packed successfully.', $commandTester->getDisplay());
+    }
 
-test('it packs repository successfully when output file exists and user declines to overwrite', function () {
-    $this->tmpRepo = sys_get_temp_dir() . '/tmp_repo_' . uniqid();
-    mkdir($this->tmpRepo);
-    // Create the output file so the command prompts for overwrite.
-    $this->tmpOutput = sys_get_temp_dir() . '/tmp_output_' . uniqid() . '.txt';
-    file_put_contents($this->tmpOutput, 'existing content');
+    public function testPacksRepositoryWhenOutputFileExistsAndUserDeclinesOverwrite(): void
+    {
+        $this->tmpRepo = sys_get_temp_dir() . '/tmp_repo_' . uniqid();
+        mkdir($this->tmpRepo);
+        $this->tmpOutput = sys_get_temp_dir() . '/tmp_output_' . uniqid() . '.txt';
+        file_put_contents($this->tmpOutput, 'existing content');
 
-    $commandTester = new CommandTester($this->command);
-    // Simulate user input: "n" (declining the overwrite)
-    $commandTester->setInputs(['n']);
+        $commandTester = new CommandTester($this->command);
+        $commandTester->setInputs(['n']);
 
-    $exitCode = $commandTester->execute([
-        'repository' => $this->tmpRepo,
-        'output' => $this->tmpOutput,
-    ]);
+        $exitCode = $commandTester->execute([
+            'repository' => $this->tmpRepo,
+            'output' => $this->tmpOutput,
+        ]);
 
-    expect($exitCode)->toBe(Command::SUCCESS);
-    expect($commandTester->getDisplay())->toContain('Creating file with new name:');
-    expect($commandTester->getDisplay())->toContain('Repository packed successfully.');
-});
+        $this->assertEquals(Command::SUCCESS, $exitCode);
+        $this->assertStringContainsString('Creating file with new name:', $commandTester->getDisplay());
+        $this->assertStringContainsString('Repository packed successfully.', $commandTester->getDisplay());
+    }
 
-test('it packs repository with the custom --format option', function () {
-    $this->tmpRepo = sys_get_temp_dir() . '/tmp_repo_' . uniqid();
-    mkdir($this->tmpRepo);
-    // Use an output file that does not exist.
-    $this->tmpOutput = sys_get_temp_dir() . '/tmp_output_' . uniqid() . '.json';
+    public function testPacksRepositoryWithCustomFormatOption(): void
+    {
+        $this->tmpRepo = sys_get_temp_dir() . '/tmp_repo_' . uniqid();
+        mkdir($this->tmpRepo);
+        $this->tmpOutput = sys_get_temp_dir() . '/tmp_output_' . uniqid() . '.json';
 
-    $commandTester = new CommandTester($this->command);
-    $exitCode = $commandTester->execute([
-        'repository' => $this->tmpRepo,
-        'output' => $this->tmpOutput,
-        '--format' => 'json',
-    ]);
+        $commandTester = new CommandTester($this->command);
+        $exitCode = $commandTester->execute([
+            'repository' => $this->tmpRepo,
+            'output' => $this->tmpOutput,
+            '--format' => 'json',
+        ]);
 
-    expect($exitCode)->toBe(Command::SUCCESS);
-    expect($commandTester->getDisplay())->toContain('Repository packed successfully.');
-});
+        $this->assertEquals(Command::SUCCESS, $exitCode);
+        $this->assertStringContainsString('Repository packed successfully.', $commandTester->getDisplay());
+    }
 
-test('it packs repository with the custom --exclude option (single and multiple patterns)', function () {
-    $this->tmpRepo = sys_get_temp_dir() . '/tmp_repo_' . uniqid();
-    mkdir($this->tmpRepo);
-    // Prepare an output file with a different extension.
-    $this->tmpOutput = sys_get_temp_dir() . '/tmp_output_' . uniqid() . '.txt';
+    public function testPacksRepositoryWithExcludeOption(): void
+    {
+        $this->tmpRepo = sys_get_temp_dir() . '/tmp_repo_' . uniqid();
+        mkdir($this->tmpRepo);
+        $this->tmpOutput = sys_get_temp_dir() . '/tmp_output_' . uniqid() . '.txt';
 
-    $commandTester = new CommandTester($this->command);
-    // Test with a single exclusion pattern
-    $exitCodeSingle = $commandTester->execute([
-        'repository' => $this->tmpRepo,
-        'output' => $this->tmpOutput,
-        '--exclude' => ['*.log'],
-    ]);
+        $commandTester = new CommandTester($this->command);
 
-    expect($exitCodeSingle)->toBe(Command::SUCCESS);
-    expect($commandTester->getDisplay())->toContain('Repository packed successfully.');
+        // Test single pattern
+        $exitCodeSingle = $commandTester->execute([
+            'repository' => $this->tmpRepo,
+            'output' => $this->tmpOutput,
+            '--exclude' => ['*.log'],
+        ]);
 
-    // Test with multiple exclusion patterns
-    $this->tmpOutput = sys_get_temp_dir() . '/tmp_output_' . uniqid() . '.txt';
-    $commandTester = new CommandTester($this->command);
-    $exitCodeMultiple = $commandTester->execute([
-        'repository' => $this->tmpRepo,
-        'output' => $this->tmpOutput,
-        '--exclude' => ['*.log', '*.tmp'],
-    ]);
+        $this->assertEquals(Command::SUCCESS, $exitCodeSingle);
+        $this->assertStringContainsString('Repository packed successfully.', $commandTester->getDisplay());
 
-    expect($exitCodeMultiple)->toBe(Command::SUCCESS);
-    expect($commandTester->getDisplay())->toContain('Repository packed successfully.');
-});
+        // Test multiple patterns
+        $this->tmpOutput = sys_get_temp_dir() . '/tmp_output_' . uniqid() . '.txt';
+        $commandTester = new CommandTester($this->command);
+        $exitCodeMultiple = $commandTester->execute([
+            'repository' => $this->tmpRepo,
+            'output' => $this->tmpOutput,
+            '--exclude' => ['*.log', '*.tmp'],
+        ]);
 
-test('it packs repository with the --no-gitignore option', function () {
-    $this->tmpRepo = sys_get_temp_dir() . '/tmp_repo_' . uniqid();
-    mkdir($this->tmpRepo);
-    // Use a unique output file name.
-    $this->tmpOutput = sys_get_temp_dir() . '/tmp_output_' . uniqid() . '.xml';
+        $this->assertEquals(Command::SUCCESS, $exitCodeMultiple);
+        $this->assertStringContainsString('Repository packed successfully.', $commandTester->getDisplay());
+    }
 
-    $commandTester = new CommandTester($this->command);
-    $exitCode = $commandTester->execute([
-        'repository' => $this->tmpRepo,
-        'output' => $this->tmpOutput,
-        '--no-gitignore' => true,
-    ]);
+    public function testPacksRepositoryWithNoGitignoreOption(): void
+    {
+        $this->tmpRepo = sys_get_temp_dir() . '/tmp_repo_' . uniqid();
+        mkdir($this->tmpRepo);
+        $this->tmpOutput = sys_get_temp_dir() . '/tmp_output_' . uniqid() . '.xml';
 
-    expect($exitCode)->toBe(Command::SUCCESS);
-    expect($commandTester->getDisplay())->toContain('Repository packed successfully.');
-});
+        $commandTester = new CommandTester($this->command);
+        $exitCode = $commandTester->execute([
+            'repository' => $this->tmpRepo,
+            'output' => $this->tmpOutput,
+            '--no-gitignore' => true,
+        ]);
+
+        $this->assertEquals(Command::SUCCESS, $exitCode);
+        $this->assertStringContainsString('Repository packed successfully.', $commandTester->getDisplay());
+    }
+}
