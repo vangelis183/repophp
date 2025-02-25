@@ -2,6 +2,34 @@
 
 All notable changes to `RepoPHP` will be documented in this file.
 
+## [0.4.0] - 2025-02-26
+
+### Added
+- Extended git repository information display in the pack summary
+- Added branch, commit hash, author and remote information to output
+- Implemented new file statistics in pack summary (total files and chars)
+- Added formatted output for repository pack summary
+- Enhanced support for handling Windows paths in formatters
+
+### Changed
+- Improved file collection process with better gitignore handling
+- Reorganized formatter classes for better maintainability
+- Enhanced error messages for path validation
+- Updated file writing process for better performance
+- Improved path normalization and validation
+
+### Fixed
+- Fixed path handling issues on Windows systems
+- Improved error handling for file read/write operations
+- Fixed formatting inconsistencies in different output formats
+- Corrected gitignore pattern matching
+
+### Technical
+- Improved code organization with dedicated service classes
+- Enhanced type safety throughout the codebase
+- Added comprehensive unit tests for new features
+- Updated PHP dependencies to latest stable versions
+
 ## 0.3.0 - 2025-02-25
 
 ### Release Notes
