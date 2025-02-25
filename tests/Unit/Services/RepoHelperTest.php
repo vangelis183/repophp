@@ -41,7 +41,8 @@ class RepoHelperTest extends TestCase
     {
         $info = $this->helper->getGitInfo();
 
-        $this->assertEquals('main', $info['branch']);
+        // Accept either 'main' or 'master' as valid default branch names
+        $this->assertContains($info['branch'], ['main', 'master']);
         $this->assertArrayHasKey('commit', $info);
         $this->assertArrayHasKey('hash', $info['commit']);
         $this->assertEquals('Test User', $info['commit']['author']);
@@ -54,11 +55,15 @@ class RepoHelperTest extends TestCase
     {
         $info = $this->helper->formatRepositoryInfo('text');
 
-        $this->assertStringContainsString('Branch: main', $info);
-        $this->assertStringContainsString('Author: Test User', $info);
-        $this->assertStringContainsString('Message: Test commit', $info);
-        $this->assertStringContainsString('Remotes:', $info);
-        $this->assertStringContainsString('  - origin: https://github.com/test/repo.git', $info);
+        $expectedFormat = "\nRepository Information:\n---------------------\n" .
+            "Branch: %s\n" .
+            "Commit: %s\n" .
+            "Author: Test User\n" .
+            "Message: Test commit\n" .
+            "Remotes:\n" .
+            "  - origin: https://github.com/test/repo.git\n";
+
+        $this->assertStringMatchesFormat($expectedFormat, $info);
     }
 
     private function removeDirectory(string $path): void
