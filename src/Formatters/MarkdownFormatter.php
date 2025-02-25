@@ -2,13 +2,11 @@
 
 namespace Vangelis\RepoPHP\Formatters;
 
-use Symfony\Component\Console\Output\OutputInterface;
-
 class MarkdownFormatter extends BaseFormatter
 {
-    public function __construct(?OutputInterface $output = null)
+    public function __construct()
     {
-        parent::__construct($output);
+        parent::__construct();
     }
 
     public function getHeader(): string
@@ -32,14 +30,6 @@ EOT;
         // Determine language for code block based on file extension
         $extension = pathinfo($path, PATHINFO_EXTENSION);
         $language = $this->getLanguageFromExtension($extension);
-
-        if ($this->output) {
-            $this->output->writeln(sprintf(
-                '<comment>Adding to Markdown: %s (size: %d bytes)</comment>',
-                $this->formatPath($path),
-                strlen($content)
-            ));
-        }
 
         return <<<EOT
 ### File: {$this->formatPath($path)}

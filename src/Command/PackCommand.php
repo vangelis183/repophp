@@ -51,6 +51,7 @@ class PackCommand extends Command
 
         // Add warning if file exists
         if (file_exists($outputPath)) {
+            /** @var \Symfony\Component\Console\Helper\QuestionHelper $helper */
             $helper = $this->getHelper('question');
             $question = new ConfirmationQuestion(
                 "File '$outputPath' already exists. Do you want to overwrite it? (y/N) ",
@@ -79,7 +80,8 @@ class PackCommand extends Command
                 $outputPath,
                 $input->getOption('format'),
                 $input->getOption('exclude'),
-                ! $input->getOption('no-gitignore')
+                ! $input->getOption('no-gitignore'),
+                $output
             );
 
             $repoPHP->pack();

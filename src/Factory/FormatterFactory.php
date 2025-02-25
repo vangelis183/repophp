@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Vangelis\RepoPHP\Factory;
 
-use InvalidArgumentException;
 use Symfony\Component\Console\Output\OutputInterface;
 use Vangelis\RepoPHP\Config\RepoPHPConfig;
 use Vangelis\RepoPHP\Formatters\FormatterInterface;
@@ -23,7 +22,10 @@ class FormatterFactory
         RepoPHPConfig::FORMAT_XML => XmlFormatter::class,
     ];
 
-    public function createFormatter(string $format, ?OutputInterface $output = null): FormatterInterface
+    /**
+     * @throws \Vangelis\RepoPHP\Exceptions\UnsupportedFormatException
+     */
+    public function createFormatter(string $format): FormatterInterface
     {
         if (! isset(self::FORMATTERS[$format])) {
             throw new UnsupportedFormatException("Unsupported format: {$format}");
@@ -31,6 +33,6 @@ class FormatterFactory
 
         $formatterClass = self::FORMATTERS[$format];
 
-        return new $formatterClass($output);
+        return new $formatterClass();
     }
 }

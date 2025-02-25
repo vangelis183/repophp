@@ -15,11 +15,6 @@ use Vangelis\RepoPHP\Services\FormatValidator;
 use Vangelis\RepoPHP\Exceptions\FileWriteException;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Finder\Finder;
-use Vangelis\RepoPHP\Formatters\MarkdownFormatter;
-use Vangelis\RepoPHP\Formatters\PlainTextFormatter;
-use Vangelis\RepoPHP\Formatters\XmlFormatter;
-use Vangelis\RepoPHP\Exceptions\InvalidPathException;
-use Vangelis\RepoPHP\Exceptions\UnsupportedFormatException;
 
 class RepoPHP
 {
@@ -31,14 +26,17 @@ class RepoPHP
     private readonly FormatterFactory $formatterFactory;
     private readonly FormatValidator $formatValidator;
     private readonly PathValidator $pathValidator;
+    private readonly ?OutputInterface $output; // @phpstan-ignore-line
 
     public function __construct(
         string $repositoryPath,
         string $outputPath,
         string $format = RepoPHPConfig::FORMAT_PLAIN,
         array $excludePatterns = [],
-        bool $respectGitignore = true
+        bool $respectGitignore = true,
+        ?OutputInterface $output = null
     ) {
+        $this->output = $output;
         $this->pathValidator = new PathValidator();
         $this->formatValidator = new FormatValidator();
         $this->formatterFactory = new FormatterFactory();
@@ -49,13 +47,14 @@ class RepoPHP
         $this->config = new RepoPHPConfig($format, $excludePatterns, $respectGitignore);
         $this->formatValidator->validate($this->config->getFormat());
 
-        $this->fileWriter = new FileWriter($this->formatterFactory, $this->config);
-        $this->fileCollector = new FileCollector(
-            new Finder(),
-            $this->config->getExcludePatterns(),
-            $this->config->getRespectGitignore(),
+        $this->fileWriter = new FileWriter(
+            $this->formatterFactory,
+            $this->config,
+            $output,
+            $this->outputPath,
             $this->repositoryPath
         );
+        $this->fileCollector = new FileCollector(new Finder(), $this->config->getExcludePatterns(), $this->config->getRespectGitignore(), $this->repositoryPath);
     }
 
     public function pack(): void
@@ -67,13 +66,14 @@ class RepoPHP
             $this->fileWriter->writeHeader($outputHandle);
 
             foreach ($files as $file) {
-                $relativePath = substr($file, strlen($this->repositoryPath) + 1);
+                $relativePath = str_replace($this->repositoryPath . '/', '', $file);
+                $content = file_get_contents($file);
                 $this->fileWriter->writeContent($outputHandle, $relativePath, $file);
             }
 
             $this->fileWriter->writeFooter($outputHandle);
-        }
-        finally {
+
+        } finally {
             fclose($outputHandle);
         }
     }

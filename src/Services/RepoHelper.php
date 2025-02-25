@@ -2,83 +2,63 @@
 
 namespace Vangelis\RepoPHP\Services;
 
-use Exception;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
-use Vangelis\RepoPHP\Formatters\FormatterInterface;
-use Vangelis\RepoPHP\Formatters\JsonFormatter;
-use Vangelis\RepoPHP\Formatters\MarkdownFormatter;
-use Vangelis\RepoPHP\Formatters\XmlFormatter;
 
 class RepoHelper
 {
     private string $repositoryPath;
 
-    public function __construct(
-        string $repositoryPath,
-        private ?OutputInterface $output = null
-    ) {
+    private ?OutputInterface $output;
+
+    public function __construct(string $repositoryPath, ?OutputInterface $output = null)
+    {
         $this->repositoryPath = $repositoryPath;
+        $this->output = $output;
     }
 
     public function getGitInfo(): array
     {
         $gitInfo = [
             'branch' => '',
-            'commit' => [
-                'hash' => '',
-                'author' => '',
-                'email' => '',
-                'message' => '',
-            ],
+            'commit' => [],
             'remotes' => [],
             'status' => [],
         ];
 
-        // Check if it's a git repository
-        if (! is_dir($this->repositoryPath.'/.git')) {
-            return $gitInfo;
-        }
-
         try {
-            // Get current branch
+            // Get branch name
             $process = new Process([
                 'git',
-                'branch',
-                '--show-current',
+                'rev-parse',
+                '--abbrev-ref',
+                'HEAD',
             ], $this->repositoryPath);
             $process->run();
             if ($process->isSuccessful()) {
                 $gitInfo['branch'] = trim($process->getOutput());
             }
 
-            // Get last commit info
+            // Get latest commit info
             $process = new Process([
                 'git',
                 'log',
                 '-1',
-                '--format=%H|%an|%ae|%s',
+                '--pretty=format:%H|%an|%s',
             ], $this->repositoryPath);
             $process->run();
             if ($process->isSuccessful()) {
-                $output = trim($process->getOutput());
-                if (! empty($output)) {
-                    $parts = explode('|', $output);
-                    if (count($parts) === 4) {
-                        [
-                            $hash,
-                            $author,
-                            $email,
-                            $message,
-                        ] = $parts;
-                        $gitInfo['commit'] = [
-                            'hash' => $hash,
-                            'author' => $author,
-                            'email' => $email,
-                            'message' => $message,
-                        ];
-                    }
-                }
+                [
+                    $hash,
+                    $author,
+                    $message,
+                ] = explode('|', trim($process->getOutput()));
+                $gitInfo['commit'] = [
+                    'hash' => $hash,
+                    'author' => $author,
+                    'message' => $message,
+                ];
             }
 
             // Get remotes
@@ -108,87 +88,88 @@ class RepoHelper
             if ($process->isSuccessful()) {
                 $gitInfo['status'] = array_filter(explode("\n", trim($process->getOutput())));
             }
-        } catch (Exception $e) {
-            // Log the error if you have a logger
+        } catch (ProcessFailedException $e) {
             if ($this->output) {
                 $this->output->writeln('<error>Error while getting git info: '.$e->getMessage().'</error>');
             }
-
-            // Return the default structure if something goes wrong
-            return $gitInfo;
         }
 
         return $gitInfo;
     }
 
-    private function formatGitInfo(array $gitInfo, FormatterInterface $formatter): string
+    public function formatRepositoryInfo(string $format = 'text'): string
     {
-        // Format git info based on the formatter type
-        if ($formatter instanceof JsonFormatter) {
-            // JSON formatter handles git info in its metadata
+        $gitInfo = $this->getGitInfo();
+        if (empty($gitInfo['branch'])) {
             return '';
         }
 
-        if ($formatter instanceof MarkdownFormatter) {
-            return $this->formatGitInfoMarkdown($gitInfo);
-        }
-
-        if ($formatter instanceof XmlFormatter) {
-            return $this->formatGitInfoXml($gitInfo);
-        }
-
-        // PlainTextFormatter
-        return $this->formatGitInfoPlain($gitInfo);
+        return match ($format) {
+            'json' => $this->formatInfoAsJson($gitInfo),
+            'xml' => $this->formatInfoAsXml($gitInfo),
+            default => $this->formatInfoAsText($gitInfo),
+        };
     }
 
-    private function formatGitInfoMarkdown(array $gitInfo): string
+    private function formatInfoAsText(array $gitInfo): string
     {
-        $output = "## Git Repository Information\n\n";
-        if (isset($gitInfo['branch'])) {
-            $output .= "- **Current Branch:** {$gitInfo['branch']}\n";
-        }
-        if (isset($gitInfo['commit'])) {
-            $output .= "- **Latest Commit:**\n";
-            $output .= "  - Hash: {$gitInfo['commit']['hash']}\n";
-            $output .= "  - Author: {$gitInfo['commit']['author']}\n";
-            $output .= "  - Message: {$gitInfo['commit']['message']}\n";
+        $info = "\nRepository Information:\n";
+        $info .= "---------------------\n";
+        $info .= "Branch: ".$gitInfo['branch']."\n";
+
+        if (! empty($gitInfo['commit'])) {
+            $info .= "Commit: ".$gitInfo['commit']['hash']."\n";
+            $info .= "Author: ".$gitInfo['commit']['author']."\n";
+            $info .= "Message: ".$gitInfo['commit']['message']."\n";
         }
 
-        return $output;
+        if (! empty($gitInfo['remotes'])) {
+            $info .= "Remotes:\n";
+            foreach ($gitInfo['remotes'] as $name => $urls) {
+                $info .= "  - ".$name.": ".$urls['fetch']."\n";
+            }
+        }
+
+        return $info."\n";
     }
 
-    private function formatGitInfoXml(array $gitInfo): string
+    private function formatInfoAsJson(array $gitInfo): string
     {
-        $output = "    <git-info>\n";
-        if (isset($gitInfo['branch'])) {
-            $output .= "        <branch>" . htmlspecialchars($gitInfo['branch']) . "</branch>\n";
-        }
-        if (isset($gitInfo['commit'])) {
-            $output .= "        <commit>\n";
-            $output .= "            <hash>" . htmlspecialchars($gitInfo['commit']['hash']) . "</hash>\n";
-            $output .= "            <author>" . htmlspecialchars($gitInfo['commit']['author']) . "</author>\n";
-            $output .= "            <message>" . htmlspecialchars($gitInfo['commit']['message']) . "</message>\n";
-            $output .= "        </commit>\n";
-        }
-        $output .= "    </git-info>";
-
-        return $output;
+        return json_encode([
+                'repository' => [
+                    'branch' => $gitInfo['branch'],
+                    'commit' => $gitInfo['commit'],
+                    'remotes' => $gitInfo['remotes'],
+                ],
+            ], JSON_PRETTY_PRINT)."\n";
     }
 
-    private function formatGitInfoPlain(array $gitInfo): string
+    private function formatInfoAsXml(array $gitInfo): string
     {
-        $output = "Git Repository Information\n";
-        $output .= "========================\n\n";
-        if (isset($gitInfo['branch'])) {
-            $output .= "Current Branch: {$gitInfo['branch']}\n";
-        }
-        if (isset($gitInfo['commit'])) {
-            $output .= "Latest Commit:\n";
-            $output .= "  Hash: {$gitInfo['commit']['hash']}\n";
-            $output .= "  Author: {$gitInfo['commit']['author']}\n";
-            $output .= "  Message: {$gitInfo['commit']['message']}\n";
+        $info = "\n<repository>";
+        $info .= "\n  <branch>".htmlspecialchars($gitInfo['branch'])."</branch>";
+
+        if (! empty($gitInfo['commit'])) {
+            $info .= "\n  <commit>";
+            $info .= "\n    <hash>".htmlspecialchars($gitInfo['commit']['hash'])."</hash>";
+            $info .= "\n    <author>".htmlspecialchars($gitInfo['commit']['author'])."</author>";
+            $info .= "\n    <message>".htmlspecialchars($gitInfo['commit']['message'])."</message>";
+            $info .= "\n  </commit>";
         }
 
-        return $output;
+        if (! empty($gitInfo['remotes'])) {
+            $info .= "\n  <remotes>";
+            foreach ($gitInfo['remotes'] as $name => $urls) {
+                $info .= "\n    <remote>";
+                $info .= "\n      <name>".htmlspecialchars($name)."</name>";
+                $info .= "\n      <url>".htmlspecialchars($urls['fetch'])."</url>";
+                $info .= "\n    </remote>";
+            }
+            $info .= "\n  </remotes>";
+        }
+
+        $info .= "\n</repository>\n";
+
+        return $info;
     }
 }
