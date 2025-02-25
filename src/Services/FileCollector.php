@@ -47,6 +47,7 @@ readonly class FileCollector
 
         // Sort by folder names
         ksort($files);
+
         // Flatten the array while maintaining folder order
         return array_merge(...array_values($files));
     }
