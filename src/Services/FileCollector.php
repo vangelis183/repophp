@@ -17,10 +17,15 @@ readonly class FileCollector
     public function collectFiles(): array
     {
         $files = [];
+        $gitignoreReader = null;
+
+        if ($this->respectGitignore) {
+            $gitignoreReader = new GitignoreReader($this->repositoryPath . '/.gitignore');
+        }
+
         $this->finder
             ->ignoreDotFiles(false)
             ->ignoreVCS(true)
-            ->ignoreVCSIgnored($this->respectGitignore)
             ->in($this->repositoryPath)
             ->notName($this->excludePatterns)
             ->sortByName();
@@ -30,13 +35,18 @@ readonly class FileCollector
                 continue;
             }
 
+            $relativePath = str_replace($this->repositoryPath . '/', '', $file->getPathname());
+
+            if ($gitignoreReader && $gitignoreReader->isIgnored($relativePath)) {
+                continue;
+            }
+
             $folderName = str_replace($this->repositoryPath . '/', '', $file->getPath());
             $files[$folderName][] = $file->getPathname();
         }
 
         // Sort by folder names
         ksort($files);
-
         // Flatten the array while maintaining folder order
         return array_merge(...array_values($files));
     }
