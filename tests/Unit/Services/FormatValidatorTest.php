@@ -4,8 +4,8 @@ namespace Vangelis\RepoPHP\Tests\Unit\Services;
 
 use PHPUnit\Framework\TestCase;
 use Vangelis\RepoPHP\Config\RepoPHPConfig;
-use Vangelis\RepoPHP\Services\FormatValidator;
 use Vangelis\RepoPHP\Exceptions\UnsupportedFormatException;
+use Vangelis\RepoPHP\Services\FormatValidator;
 
 class FormatValidatorTest extends TestCase
 {
