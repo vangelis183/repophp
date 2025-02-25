@@ -26,7 +26,7 @@ readonly class FileCollector
             ->sortByName();
 
         foreach ($this->finder as $file) {
-            if (!$file->isFile()) {
+            if (! $file->isFile()) {
                 continue;
             }
 

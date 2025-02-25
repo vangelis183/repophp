@@ -4,17 +4,15 @@ declare(strict_types=1);
 
 namespace Vangelis\RepoPHP;
 
-use InvalidArgumentException;
-use RuntimeException;
-use Vangelis\RepoPHP\Services\FileWriter;
-use Vangelis\RepoPHP\Config\RepoPHPConfig;
-use Vangelis\RepoPHP\Services\FileCollector;
-use Vangelis\RepoPHP\Services\PathValidator;
-use Vangelis\RepoPHP\Factory\FormatterFactory;
-use Vangelis\RepoPHP\Services\FormatValidator;
-use Vangelis\RepoPHP\Exceptions\FileWriteException;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Finder\Finder;
+use Vangelis\RepoPHP\Config\RepoPHPConfig;
+use Vangelis\RepoPHP\Exceptions\FileWriteException;
+use Vangelis\RepoPHP\Factory\FormatterFactory;
+use Vangelis\RepoPHP\Services\FileCollector;
+use Vangelis\RepoPHP\Services\FileWriter;
+use Vangelis\RepoPHP\Services\FormatValidator;
+use Vangelis\RepoPHP\Services\PathValidator;
 
 class RepoPHP
 {

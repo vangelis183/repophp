@@ -16,4 +16,3 @@ interface FormatterInterface
 
     public function validateContent(string $content): bool;
 }
-

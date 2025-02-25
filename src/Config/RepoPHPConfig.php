@@ -69,4 +69,3 @@ class RepoPHPConfig
         return $this->respectGitignore;
     }
 }
-
