@@ -30,13 +30,12 @@ EOT;
 
     public function formatFile(string $path, string $content): string
     {
-        $escapedContent = htmlspecialchars($content, ENT_XML1 | ENT_QUOTES, 'UTF-8');
         $escapedPath = htmlspecialchars($this->formatPath($path), ENT_XML1 | ENT_QUOTES, 'UTF-8');
 
         return <<<EOT
     <file>
         <path>{$escapedPath}</path>
-        <content><![CDATA[{$escapedContent}]]></content>
+        <content><![CDATA[{$content}]]></content>
     </file>
 EOT;
     }

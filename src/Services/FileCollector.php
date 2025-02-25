@@ -17,16 +17,27 @@ readonly class FileCollector
     public function collectFiles(): array
     {
         $files = [];
+        $gitignoreReader = null;
+
+        if ($this->respectGitignore) {
+            $gitignoreReader = new GitignoreReader($this->repositoryPath . '/.gitignore');
+        }
+
         $this->finder
             ->ignoreDotFiles(false)
             ->ignoreVCS(true)
-            ->ignoreVCSIgnored($this->respectGitignore)
             ->in($this->repositoryPath)
             ->notName($this->excludePatterns)
             ->sortByName();
 
         foreach ($this->finder as $file) {
             if (! $file->isFile()) {
+                continue;
+            }
+
+            $relativePath = str_replace($this->repositoryPath . '/', '', $file->getPathname());
+
+            if ($gitignoreReader && $gitignoreReader->isIgnored($relativePath)) {
                 continue;
             }
 
