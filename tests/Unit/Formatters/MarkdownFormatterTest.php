@@ -2,8 +2,8 @@
 
 namespace Vangelis\RepoPHP\Tests\Unit\Formatters;
 
-use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\TestCase;
 use Vangelis\RepoPHP\Formatters\MarkdownFormatter;
 
 class MarkdownFormatterTest extends TestCase

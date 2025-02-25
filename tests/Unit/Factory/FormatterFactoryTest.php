@@ -2,9 +2,9 @@
 
 namespace Vangelis\RepoPHP\Tests\Unit\Factory;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Vangelis\RepoPHP\Config\RepoPHPConfig;
-use PHPUnit\Framework\Attributes\DataProvider;
 use Vangelis\RepoPHP\Exceptions\UnsupportedFormatException;
 use Vangelis\RepoPHP\Factory\FormatterFactory;
 use Vangelis\RepoPHP\Formatters\JsonFormatter;
