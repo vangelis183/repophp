@@ -41,12 +41,29 @@ class FileWriterTest extends TestCase
         }
 
         if (is_dir($this->repoPath)) {
-            rmdir($this->repoPath);
+            $this->removeDirectory($this->repoPath);
         }
 
         if (is_dir($this->tempDir)) {
-            rmdir($this->tempDir);
+            $this->removeDirectory($this->tempDir);
         }
+    }
+
+    private function removeDirectory($dir): void
+    {
+        if (! is_dir($dir)) {
+            return;
+        }
+
+        $files = array_diff(scandir($dir), [
+            '.',
+            '..',
+        ]);
+        foreach ($files as $file) {
+            $path = $dir.'/'.$file;
+            is_dir($path) ? $this->removeDirectory($path) : unlink($path);
+        }
+        rmdir($dir);
     }
 
     public function testWriteHeader()

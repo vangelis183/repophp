@@ -51,7 +51,7 @@ class FileCollectorTest extends TestCase
         }
     }
 
-    private function removeDirectory($dir)
+    private function removeDirectory($dir): void
     {
         if (! is_dir($dir)) {
             return;

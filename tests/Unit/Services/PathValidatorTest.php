@@ -19,8 +19,30 @@ class PathValidatorTest extends TestCase
     protected function tearDown(): void
     {
         if (is_dir($this->tempDir)) {
-            rmdir($this->tempDir);
+            $this->removeDirectory($this->tempDir);
         }
+    }
+
+    private function removeDirectory($dir): void
+    {
+        if (! is_dir($dir)) {
+            return;
+        }
+
+        $files = array_diff(scandir($dir), [
+            '.',
+            '..',
+        ]);
+
+        foreach ($files as $file) {
+            if (is_dir($dir . '/' . $file)) {
+                $this->removeDirectory($dir . '/' . $file);
+            } else {
+                unlink($dir . '/' . $file);
+            }
+        }
+
+        rmdir($dir);
     }
 
     public function testValidateRepositoryPath()
