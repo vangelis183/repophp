@@ -24,7 +24,8 @@ class RepoPHP
     private readonly FormatterFactory $formatterFactory;
     private readonly FormatValidator $formatValidator;
     private readonly PathValidator $pathValidator;
-    private readonly ?OutputInterface $output; // @phpstan-ignore-line
+    // @phpstan-ignore-next-line
+    private readonly ?OutputInterface $output;
 
     public function __construct(
         string $repositoryPath,
