@@ -2,6 +2,8 @@
 
 namespace Vangelis\RepoPHP\Exceptions;
 
-class PackerException
+use Exception;
+
+class PackerException extends Exception
 {
 }

@@ -2,66 +2,72 @@
 
 namespace Vangelis\RepoPHP\Formatters;
 
-use Symfony\Component\Console\Output\OutputInterface;
-
 class JsonFormatter extends BaseFormatter
 {
     private array $files = [];
 
-    private ?OutputInterface $output;
-
     private ?array $gitInfo;
 
-    public function __construct(?OutputInterface $output = null, ?array $gitInfo = null)
+    private bool $headerWritten = false;
+
+    public function __construct(?array $gitInfo = null)
     {
-        $this->output = $output;
+        parent::__construct();
         $this->gitInfo = $gitInfo;
     }
 
     public function getHeader(): string
     {
-        return '';  // JSON structure will be written in getFooter
-    }
+        if (! $this->headerWritten) {
+            $this->headerWritten = true;
 
-    public function getFooter(): string
-    {
-        $output = [
-            'metadata' => [
-                'generated_at' => $this->getDateTime(),
-                'file_count' => count($this->files),
-                'git_info' => $this->gitInfo ?? null,
-            ],
-            'files' => $this->files,
-        ];
+            return "{\n  \"files\": [";
+        }
 
-        // Reset files array for next use
-        $this->files = [];
-
-        return json_encode($output, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        return '';
     }
 
     public function formatFile(string $path, string $content): string
     {
-        if ($this->output) {
-            $this->output->writeln(sprintf(
-                '<comment>Adding to JSON: %s (size: %d bytes)</comment>',
-                $this->formatPath($path),
-                strlen($content)
-            ));
-        }
-
-        $this->files[] = [
+        $fileData = [
             'path' => $this->formatPath($path),
-            'size' => strlen($content),
-            'extension' => pathinfo($path, PATHINFO_EXTENSION),
-            'content' => $content,
+            'content' => base64_encode($content),
         ];
 
-        return ''; // Actual content will be written in getFooter
+        $this->files[] = $fileData;
+        $fileOutput = json_encode($fileData, JSON_UNESCAPED_SLASHES);
+
+        return (! empty($this->files) && count($this->files) > 1 ? ',' : '')."\n    ".$fileOutput;
+    }
+
+    public function getFooter(): string
+    {
+        $totalSize = 0;
+        foreach ($this->files as $file) {
+            $totalSize += strlen(base64_decode($file['content']));
+        }
+
+        $stats = [
+            'file_count' => count($this->files),
+            'total_size' => $totalSize,
+        ];
+
+        if ($this->gitInfo) {
+            $stats['git'] = $this->gitInfo;
+        }
+
+        $statsJson = json_encode($stats, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        $footer = "\n  ],\n  \"stats\": ".$statsJson."\n}";
+
+        // Clear the state only after generating all content
+        $this->files = [];
+        $this->headerWritten = false;
+
+        return $footer;
     }
 
     public function getSeparator(): string
     {
-        return ''; // Not needed for JSON format
+        return '';
     }
 }

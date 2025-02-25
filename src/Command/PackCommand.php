@@ -51,6 +51,7 @@ class PackCommand extends Command
 
         // Add warning if file exists
         if (file_exists($outputPath)) {
+            /** @var \Symfony\Component\Console\Helper\QuestionHelper $helper */
             $helper = $this->getHelper('question');
             $question = new ConfirmationQuestion(
                 "File '$outputPath' already exists. Do you want to overwrite it? (y/N) ",

@@ -90,14 +90,15 @@ composer test
 Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.  
   
 ## ToDos  
- - [ ] More tests  
- - [ ] Git Repositiory Information
- - [ ] Token Count for each file and entire repo
- - [ ] Add compression (Comments etc.)
- - [ ] Add option for remote Git Repositories
- - [ ] Add option for specific branch
- - [ ] Move settings to configuration
- - [ ] Consider different encodings
+- [x] Move settings to configuration
+- [x] Git Repositiory Information
+- [x] Directory structure
+- [ ] More tests  
+- [ ] Token Count for each file and entire repo
+- [ ] Add compression (Comments etc.)
+- [ ] Add option for remote Git Repositories
+- [ ] Add option for specific branch
+- [ ] Consider different encodings
    
   
 ## Contributing  
