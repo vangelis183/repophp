@@ -2,8 +2,8 @@
 
 namespace Vangelis\RepoPHP\Analyzers;
 
-use Vangelis\RepoPHP\Services\BinaryFileDetector;
 use Vangelis\RepoPHP\Exceptions\TokenCounterException;
+use Vangelis\RepoPHP\Services\BinaryFileDetector;
 
 class TokenCounter
 {
