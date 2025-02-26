@@ -47,7 +47,13 @@ class PackCommand extends Command
             'noignore',
             InputOption::VALUE_NONE,
             'Do not respect .gitignore files'
+        )->addOption(
+            'compress',
+            'compress',
+            InputOption::VALUE_NONE,
+            'Remove comments and empty lines from files'
         );
+        ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -88,7 +94,8 @@ class PackCommand extends Command
                 $input->getOption('exclude'),
                 ! $input->getOption('no-gitignore'),
                 $output,
-                $input->getOption('encoding')
+                $input->getOption('encoding'),
+                $input->getOption('compress')
             );
 
             $repoPHP->pack();

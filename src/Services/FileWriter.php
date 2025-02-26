@@ -20,11 +20,19 @@ class FileWriter
 
     private array $fileStats = [];
 
+    private array $unreadableFiles = [];
+
+    private array $binaryFiles = [];
+
     private readonly ?OutputInterface $output;
 
     private readonly string $outputPath;
 
     private readonly RepoHelper $repoHelper;
+
+    private readonly CommentStripper $commentStripper;
+
+    private readonly BinaryFileDetector $binaryFileDetector;
 
     public function __construct(
         private readonly FormatterFactory $formatterFactory,
@@ -37,6 +45,8 @@ class FileWriter
         $this->output = $output;
         $this->outputPath = $outputPath;
         $this->repoHelper = new RepoHelper($repositoryPath, $output);
+        $this->commentStripper = new CommentStripper();
+        $this->binaryFileDetector = new BinaryFileDetector();
     }
 
     /**
@@ -69,12 +79,25 @@ class FileWriter
     public function writeContent($outputHandle, string $relativePath, string $filePath): void
     {
         if (! is_readable($filePath)) {
+            $this->unreadableFiles[] = $relativePath;
             $this->output?->writeln("<error>⚠️  Cannot read file: {$relativePath}</error>");
 
             return;
         }
 
+        if ($this->binaryFileDetector->isBinary($filePath)) {
+            $this->binaryFiles[] = $relativePath;
+            $this->output?->writeln("<error>⚠️  Skipping binary file: {$relativePath}</error>");
+
+            return;
+        }
+
         $content = $this->readFile($filePath);
+
+        if ($this->config->shouldCompress()) {
+            $content = $this->commentStripper->cleanFile($content) ?? $content;
+        }
+
         $chars = strlen($content);
 
         $tokens = $this->tokenCounter->countTokens($filePath, $this->config->getEncoding());
@@ -150,7 +173,26 @@ class FileWriter
                     foreach ($gitInfo['remotes'] as $name => $urls) {
                         $remoteInfo[] = sprintf("%s (%s)", $name, $urls['fetch']);
                     }
-                    $this->output->writeln("     Remotes: " . implode(', ', $remoteInfo));
+                    $this->output->writeln("     Remotes: ".implode(', ', $remoteInfo));
+                }
+            }
+
+            if (! empty($this->unreadableFiles) || ! empty($this->binaryFiles)) {
+                $this->output->writeln("\n⚠️  Unprocessed Files:");
+                $this->output->writeln("───────────────────────");
+
+                if (! empty($this->unreadableFiles)) {
+                    $this->output->writeln("\n  Unreadable Files:");
+                    foreach ($this->unreadableFiles as $file) {
+                        $this->output->writeln("  - {$file}");
+                    }
+                }
+
+                if (! empty($this->binaryFiles)) {
+                    $this->output->writeln("\n  Binary Files:");
+                    foreach ($this->binaryFiles as $file) {
+                        $this->output->writeln("  - {$file}");
+                    }
                 }
             }
 

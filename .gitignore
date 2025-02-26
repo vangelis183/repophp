@@ -32,3 +32,4 @@ testbench.yaml
 /docs
 /coverage
 /repomix-output.txt
+/rector.php

@@ -3,11 +3,12 @@
 namespace Vangelis\RepoPHP\Analyzers;
 
 use Vangelis\RepoPHP\Exceptions\TokenCounterException;
+use Vangelis\RepoPHP\Services\BinaryFileDetector;
 
 class TokenCounter
 {
     private string $executablePath;
-    private array $mimeTypeCache = [];
+    private readonly BinaryFileDetector $binaryFileDetector;
 
     public function __construct(string $executablePath)
     {
@@ -15,11 +16,16 @@ class TokenCounter
             throw new TokenCounterException("Token counter executable not found at: $executablePath");
         }
         $this->executablePath = $executablePath;
+        $this->binaryFileDetector = new BinaryFileDetector();
     }
 
     public function countTokens(string $filePath, string $encoding): int
     {
         if ($this->isBinaryFile($filePath)) {
+            return 0;
+        }
+        // Skip non-text files or special files like .gitignore
+        if ($this->isSpecialFile($filePath) || ! $this->isTextFile($filePath)) {
             return 0;
         }
 
@@ -54,35 +60,27 @@ class TokenCounter
 
     private function isBinaryFile(string $filePath): bool
     {
-        if (! file_exists($filePath)) {
-            return false;
-        }
+        return $this->binaryFileDetector->isBinary($filePath);
+    }
 
-        if (isset($this->mimeTypeCache[$filePath])) {
-            return $this->mimeTypeCache[$filePath];
-        }
-
-        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+    private function isTextFile(string $filePath): bool
+    {
+        $finfo = finfo_open(FILEINFO_MIME);
         $mimeType = finfo_file($finfo, $filePath);
         finfo_close($finfo);
 
-        $isBinary = ! str_starts_with($mimeType, 'text/')
-            && ! in_array($mimeType, [
-                'application/x-httpd-php',
-                'application/json',
-                'application/xml',
-                'application/javascript',
-                'application/x-javascript',
-                'application/ecmascript',
-                'application/x-yaml',
-                'application/x-perl',
-                'application/x-sh',
-                'application/x-ruby',
-                'application/x-python',
-            ], true);
+        return str_contains($mimeType, 'text/') || str_contains($mimeType, '/xml');
+    }
 
-        $this->mimeTypeCache[$filePath] = $isBinary;
+    private function isSpecialFile(string $filePath): bool
+    {
+        $specialFiles = [
+            '.gitignore',
+            '.gitattributes',
+            '.env',
+            '.editorconfig',
+        ];
 
-        return $isBinary;
+        return in_array(basename($filePath), $specialFiles, true);
     }
 }

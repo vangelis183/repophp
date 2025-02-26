@@ -45,7 +45,7 @@ You can use the `pack` command to package a local repository directory into a si
 Use the following command to pack a repository:  
   
 ```bash  
-vendor/bin/repophp pack /path/to/repository /path/to/output --format=json --exclude="*.log,.env.local" --no-gitignore  
+vendor/bin/repophp pack /path/to/repository /path/to/output --format=json --exclude="*.log,.env.local" --no-gitignore --compress  
 ```  
 
 #### Breakdown:
@@ -54,6 +54,7 @@ vendor/bin/repophp pack /path/to/repository /path/to/output --format=json --excl
 - Uses `json` as the output format.
 - Excludes files matching the `*.log` and `.env.local` patterns.
 - Ignores `.gitignore` rules.
+- Compresses the output file. Strip comments and empty lines.
 
 ### Additional Behavior
 - **Overwrite Handling**:    
@@ -96,7 +97,7 @@ Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed re
 - [x] More tests  
 - [x] Token Count for each file and entire repo
 - [x] Consider different encodings
-- [ ] Add compression (Comments etc.)
+- [x] Add compression (Comments etc.)
 - [ ] Add option for remote Git Repositories
 - [ ] Add option for specific branch
    

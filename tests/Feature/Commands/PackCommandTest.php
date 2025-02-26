@@ -30,7 +30,7 @@ class PackCommandTest extends TestCase
         }
 
         // Create mock token counter binary
-        $tokenCounterPath = $vendorBinDir . '/token-counter';
+        $tokenCounterPath = $vendorBinDir . '/tokencounter';
         file_put_contents($tokenCounterPath, '#!/bin/bash' . PHP_EOL . 'echo "10"');
         chmod($tokenCounterPath, 0755);
     }
@@ -50,7 +50,7 @@ class PackCommandTest extends TestCase
         }
 
         // Clean up token counter binary
-        $tokenCounterPath = dirname(__DIR__, 3) . '/bin/token-counter';
+        $tokenCounterPath = dirname(__DIR__, 3) . '/bin/tokencounter';
         if (file_exists($tokenCounterPath)) {
             unlink($tokenCounterPath);
         }
