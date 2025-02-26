@@ -25,7 +25,7 @@ class PackCommandTest extends TestCase
 
         // Create vendor/bin directory if it doesn't exist
         $vendorBinDir = dirname(__DIR__, 3) . '/bin';
-        if (!is_dir($vendorBinDir)) {
+        if (! is_dir($vendorBinDir)) {
             mkdir($vendorBinDir, 0777, true);
         }
 

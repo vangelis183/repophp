@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Vangelis\RepoPHP;
 
-use Vangelis\RepoPHP\Analyzers\TokenCounter;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Finder\Finder;
+use Vangelis\RepoPHP\Analyzers\TokenCounter;
 use Vangelis\RepoPHP\Config\RepoPHPConfig;
 use Vangelis\RepoPHP\Exceptions\FileWriteException;
 use Vangelis\RepoPHP\Factory\FormatterFactory;

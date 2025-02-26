@@ -29,7 +29,7 @@ class RepoPHPTest extends TestCase
 
         // Create bin directory in vendor and copy token counter
         $vendorBinDir = dirname(__DIR__, 3) . '/bin';
-        if (!is_dir($vendorBinDir)) {
+        if (! is_dir($vendorBinDir)) {
             mkdir($vendorBinDir, 0777, true);
         }
         copy($this->tokenCounterPath, $vendorBinDir . '/token-counter');

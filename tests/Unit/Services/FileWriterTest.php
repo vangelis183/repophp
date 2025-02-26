@@ -3,11 +3,11 @@
 namespace Vangelis\RepoPHP\Tests\Unit\Services;
 
 use PHPUnit\Framework\TestCase;
-use Vangelis\RepoPHP\Config\RepoPHPConfig;
+use Symfony\Component\Console\Output\BufferedOutput;
 use Vangelis\RepoPHP\Analyzers\TokenCounter;
+use Vangelis\RepoPHP\Config\RepoPHPConfig;
 use Vangelis\RepoPHP\Factory\FormatterFactory;
 use Vangelis\RepoPHP\Services\FileWriter;
-use Symfony\Component\Console\Output\BufferedOutput;
 
 class FileWriterTest extends TestCase
 {
