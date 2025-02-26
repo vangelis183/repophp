@@ -3,6 +3,8 @@
 namespace Vangelis\RepoPHP\Tests\Unit\Services;
 
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Console\Output\BufferedOutput;
+use Vangelis\RepoPHP\Analyzers\TokenCounter;
 use Vangelis\RepoPHP\Config\RepoPHPConfig;
 use Vangelis\RepoPHP\Factory\FormatterFactory;
 use Vangelis\RepoPHP\Services\FileWriter;
@@ -14,6 +16,8 @@ class FileWriterTest extends TestCase
     private string $repoPath;
     private FormatterFactory $formatterFactory;
     private RepoPHPConfig $config;
+    private TokenCounter $tokenCounter;
+    private BufferedOutput $output;
 
     protected function setUp(): void
     {
@@ -27,7 +31,14 @@ class FileWriterTest extends TestCase
         file_put_contents($this->repoPath . '/test.php', '<?php echo "Hello World"; ?>');
 
         $this->formatterFactory = new FormatterFactory();
-        $this->config = new RepoPHPConfig(RepoPHPConfig::FORMAT_PLAIN);
+        $this->config = $this->createMock(RepoPHPConfig::class);
+        $this->config->method('getFormat')->willReturn(RepoPHPConfig::FORMAT_PLAIN);
+        $this->config->method('getEncoding')->willReturn(RepoPHPConfig::ENCODING_CL100K);
+
+        $this->tokenCounter = $this->createMock(TokenCounter::class);
+        $this->tokenCounter->method('countTokens')->willReturn(10);
+
+        $this->output = new BufferedOutput();
     }
 
     protected function tearDown(): void
@@ -35,15 +46,12 @@ class FileWriterTest extends TestCase
         if (file_exists($this->repoPath . '/test.php')) {
             unlink($this->repoPath . '/test.php');
         }
-
         if (file_exists($this->outputPath)) {
             unlink($this->outputPath);
         }
-
         if (is_dir($this->repoPath)) {
             $this->removeDirectory($this->repoPath);
         }
-
         if (is_dir($this->tempDir)) {
             $this->removeDirectory($this->tempDir);
         }
@@ -71,7 +79,8 @@ class FileWriterTest extends TestCase
         $writer = new FileWriter(
             $this->formatterFactory,
             $this->config,
-            null,
+            $this->tokenCounter,
+            $this->output,
             $this->outputPath,
             $this->repoPath
         );
@@ -90,7 +99,8 @@ class FileWriterTest extends TestCase
         $writer = new FileWriter(
             $this->formatterFactory,
             $this->config,
-            null,
+            $this->tokenCounter,
+            $this->output,
             $this->outputPath,
             $this->repoPath
         );
@@ -109,7 +119,8 @@ class FileWriterTest extends TestCase
         $writer = new FileWriter(
             $this->formatterFactory,
             $this->config,
-            null,
+            $this->tokenCounter,
+            $this->output,
             $this->outputPath,
             $this->repoPath
         );

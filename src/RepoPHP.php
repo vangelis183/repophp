@@ -6,6 +6,7 @@ namespace Vangelis\RepoPHP;
 
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Finder\Finder;
+use Vangelis\RepoPHP\Analyzers\TokenCounter;
 use Vangelis\RepoPHP\Config\RepoPHPConfig;
 use Vangelis\RepoPHP\Exceptions\FileWriteException;
 use Vangelis\RepoPHP\Factory\FormatterFactory;
@@ -33,7 +34,8 @@ class RepoPHP
         string $format = RepoPHPConfig::FORMAT_PLAIN,
         array $excludePatterns = [],
         bool $respectGitignore = true,
-        ?OutputInterface $output = null
+        ?OutputInterface $output = null,
+        string $encoding = RepoPHPConfig::ENCODING_CL100K
     ) {
         $this->output = $output;
         $this->pathValidator = new PathValidator();
@@ -43,12 +45,15 @@ class RepoPHP
         $this->repositoryPath = $this->pathValidator->validateRepositoryPath($repositoryPath);
         $this->outputPath = $this->pathValidator->validateOutputPath($outputPath);
 
-        $this->config = new RepoPHPConfig($format, $excludePatterns, $respectGitignore);
+        $this->config = new RepoPHPConfig($format, $excludePatterns, $respectGitignore, null, $encoding);
+        $tokenCounter = new TokenCounter($this->config->getTokenCounterPath());
+
         $this->formatValidator->validate($this->config->getFormat());
 
         $this->fileWriter = new FileWriter(
             $this->formatterFactory,
             $this->config,
+            $tokenCounter,
             $output,
             $this->outputPath,
             $this->repositoryPath

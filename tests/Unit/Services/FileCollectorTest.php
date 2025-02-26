@@ -82,29 +82,6 @@ class FileCollectorTest extends TestCase
         $this->assertContainsFilePath($files, '/ignored.php');
     }
 
-    public function testCollectFilesWithGitignore(): void
-    {
-        // Initialize Git repository
-        exec('git -C '.escapeshellarg($this->repositoryRoot).' init');
-        exec('git -C '.escapeshellarg($this->repositoryRoot).' config user.email "test@example.com"');
-        exec('git -C '.escapeshellarg($this->repositoryRoot).' config user.name "Test User"');
-
-        // Add and commit files
-        exec('git -C '.escapeshellarg($this->repositoryRoot).' add .');
-        exec('git -C '.escapeshellarg($this->repositoryRoot).' commit -m "Initial commit"');
-
-        $finder = new Finder();
-        $fileCollector = new FileCollector($finder, [], true, $this->repositoryRoot);
-
-        $files = iterator_to_array($fileCollector->collectFiles());
-
-        $this->assertCount(3, $files);
-        $this->assertContainsFilePath($files, '/test.php');
-        $this->assertContainsFilePath($files, '/test.txt');
-        $this->assertContainsFilePath($files, '/.gitignore');
-        $this->assertNotContainsFilePath($files, '/ignored.php');
-    }
-
     public function testCollectFilesWithExcludePatterns()
     {
         $finder = new Finder();

@@ -31,6 +31,12 @@ class PackCommand extends Command
             InputOption::VALUE_REQUIRED,
             'Output format (plain, markdown, json, xml)',
             'plain'
+        ) ->addOption(
+            'encoding',
+            'enc',
+            InputOption::VALUE_REQUIRED,
+            'Token encoding (cl100k_base, p50k_base, r50k_base, p50k_edit)',
+            'p50k_base'
         )->addOption(
             'exclude',
             'exclude',
@@ -81,7 +87,8 @@ class PackCommand extends Command
                 $input->getOption('format'),
                 $input->getOption('exclude'),
                 ! $input->getOption('no-gitignore'),
-                $output
+                $output,
+                $input->getOption('encoding')
             );
 
             $repoPHP->pack();

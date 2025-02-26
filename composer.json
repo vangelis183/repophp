@@ -14,19 +14,21 @@
         }
     ],
     "bin": [
-        "bin/repophp"
+        "bin/repophp",
+        "bin/token-counter"
     ],
     "require": {
         "php": "^8.3",
         "symfony/finder": "^7.2",
-        "symfony/process": "^7.2"
+        "symfony/process": "^7.2",
+        "ext-fileinfo": "*",
+        "ext-simplexml": "*"
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^3.21.1",
         "mikey179/vfsstream": "^1.6",
         "phpstan/phpstan": "^2.1",
-        "phpunit/phpunit": "^11.5",
-        "ext-simplexml": "*"
+        "phpunit/phpunit": "^11.5"
     },
     "autoload": {
         "psr-4": {

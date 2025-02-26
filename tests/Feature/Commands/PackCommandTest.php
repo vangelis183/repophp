@@ -22,6 +22,17 @@ class PackCommandTest extends TestCase
         $this->application = new Application();
         $this->application->add(new PackCommand());
         $this->command = $this->application->find('pack');
+
+        // Create vendor/bin directory if it doesn't exist
+        $vendorBinDir = dirname(__DIR__, 3) . '/bin';
+        if (! is_dir($vendorBinDir)) {
+            mkdir($vendorBinDir, 0777, true);
+        }
+
+        // Create mock token counter binary
+        $tokenCounterPath = $vendorBinDir . '/token-counter';
+        file_put_contents($tokenCounterPath, '#!/bin/bash' . PHP_EOL . 'echo "10"');
+        chmod($tokenCounterPath, 0755);
     }
 
     protected function tearDown(): void
@@ -36,6 +47,12 @@ class PackCommandTest extends TestCase
 
         if ($this->tmpRepo && is_dir($this->tmpRepo)) {
             rmdir($this->tmpRepo);
+        }
+
+        // Clean up token counter binary
+        $tokenCounterPath = dirname(__DIR__, 3) . '/bin/token-counter';
+        if (file_exists($tokenCounterPath)) {
+            unlink($tokenCounterPath);
         }
     }
 

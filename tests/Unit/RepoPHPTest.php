@@ -10,23 +10,34 @@ class RepoPHPTest extends TestCase
 {
     private string $repositoryRoot;
     private string $outputPath;
+    private string $tokenCounterPath;
 
     protected function setUp(): void
     {
-        // Echtes temporäres Verzeichnis verwenden
         $this->repositoryRoot = sys_get_temp_dir() . '/repophp-test-' . uniqid();
         $this->outputPath = sys_get_temp_dir() . '/repophp-output-' . uniqid() . '.txt';
+        $this->tokenCounterPath = sys_get_temp_dir() . '/token-counter-' . uniqid();
 
-        // Testverzeichnisstruktur erstellen
         mkdir($this->repositoryRoot, 0777, true);
         file_put_contents($this->repositoryRoot . '/test.php', '<?php echo "Hello World"; ?>');
         file_put_contents($this->repositoryRoot . '/.gitignore', 'ignored.php');
         file_put_contents($this->repositoryRoot . '/ignored.php', '<?php echo "Ignored file"; ?>');
+
+        // Create mock token counter binary
+        file_put_contents($this->tokenCounterPath, '#!/bin/bash' . PHP_EOL . 'echo "10"');
+        chmod($this->tokenCounterPath, 0755);
+
+        // Create bin directory in vendor and copy token counter
+        $vendorBinDir = dirname(__DIR__, 3) . '/bin';
+        if (! is_dir($vendorBinDir)) {
+            mkdir($vendorBinDir, 0777, true);
+        }
+        copy($this->tokenCounterPath, $vendorBinDir . '/token-counter');
+        chmod($vendorBinDir . '/token-counter', 0755);
     }
 
     protected function tearDown(): void
     {
-        // Temporäre Testdateien entfernen
         if (file_exists($this->outputPath)) {
             unlink($this->outputPath);
         }
@@ -43,7 +54,16 @@ class RepoPHPTest extends TestCase
             unlink($this->repositoryRoot . '/ignored.php');
         }
 
-        // Remove test directory and its contents
+        if (file_exists($this->tokenCounterPath)) {
+            unlink($this->tokenCounterPath);
+        }
+
+        // Clean up vendor bin token counter
+        $vendorTokenCounter = dirname(__DIR__, 3) . '/bin/token-counter';
+        if (file_exists($vendorTokenCounter)) {
+            unlink($vendorTokenCounter);
+        }
+
         if (is_dir($this->repositoryRoot)) {
             $this->removeDirectory($this->repositoryRoot);
         }
@@ -67,7 +87,12 @@ class RepoPHPTest extends TestCase
     {
         $repoPHP = new RepoPHP(
             $this->repositoryRoot,
-            $this->outputPath
+            $this->outputPath,
+            RepoPHPConfig::FORMAT_PLAIN,
+            [],
+            true,
+            null,
+            RepoPHPConfig::ENCODING_CL100K
         );
 
         $this->assertInstanceOf(RepoPHP::class, $repoPHP);
@@ -77,7 +102,12 @@ class RepoPHPTest extends TestCase
     {
         $repoPHP = new RepoPHP(
             $this->repositoryRoot,
-            $this->outputPath
+            $this->outputPath,
+            RepoPHPConfig::FORMAT_PLAIN,
+            [],
+            true,
+            null,
+            RepoPHPConfig::ENCODING_CL100K
         );
 
         $repoPHP->pack();
