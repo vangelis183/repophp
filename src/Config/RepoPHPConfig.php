@@ -40,18 +40,30 @@ class RepoPHPConfig
     private string $tokenCounterPath;
     private string $encoding;
 
+    private bool $compress;
+
     public function __construct(
         string $format = self::FORMAT_PLAIN,
         array $excludePatterns = [],
         bool $respectGitignore = true,
         ?string $tokenCounterPath = null,
-        string $encoding = self::ENCODING_CL100K
+        string $encoding = self::ENCODING_CL100K,
+        bool $compress = false
     ) {
         $this->format = $format;
         $this->excludePatterns = array_merge(self::getDefaultExcludePatterns(), $excludePatterns);
         $this->respectGitignore = $respectGitignore;
         $this->tokenCounterPath = $tokenCounterPath ?? $this->findTokenCounterBinary();
         $this->encoding = $encoding;
+        if (!file_exists($this->tokenCounterPath)) {
+            throw new TokenCounterException('Token counter binary not found');
+        }
+        $this->compress = $compress;
+    }
+
+    public function shouldCompress(): bool
+    {
+        return $this->compress;
     }
 
     public function getEncoding(): string

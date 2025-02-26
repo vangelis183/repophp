@@ -35,7 +35,8 @@ class RepoPHP
         array $excludePatterns = [],
         bool $respectGitignore = true,
         ?OutputInterface $output = null,
-        string $encoding = RepoPHPConfig::ENCODING_CL100K
+        string $encoding = RepoPHPConfig::ENCODING_CL100K,
+        bool $compress = false
     ) {
         $this->output = $output;
         $this->pathValidator = new PathValidator();
@@ -45,7 +46,7 @@ class RepoPHP
         $this->repositoryPath = $this->pathValidator->validateRepositoryPath($repositoryPath);
         $this->outputPath = $this->pathValidator->validateOutputPath($outputPath);
 
-        $this->config = new RepoPHPConfig($format, $excludePatterns, $respectGitignore, null, $encoding);
+        $this->config = new RepoPHPConfig($format, $excludePatterns, $respectGitignore, null, $encoding, $compress);
         $tokenCounter = new TokenCounter($this->config->getTokenCounterPath());
 
         $this->formatValidator->validate($this->config->getFormat());

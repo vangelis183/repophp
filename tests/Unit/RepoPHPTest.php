@@ -16,7 +16,7 @@ class RepoPHPTest extends TestCase
     {
         $this->repositoryRoot = sys_get_temp_dir() . '/repophp-test-' . uniqid();
         $this->outputPath = sys_get_temp_dir() . '/repophp-output-' . uniqid() . '.txt';
-        $this->tokenCounterPath = sys_get_temp_dir() . '/token-counter-' . uniqid();
+        $this->tokenCounterPath = sys_get_temp_dir() . '/tokencounter-' . uniqid();
 
         mkdir($this->repositoryRoot, 0777, true);
         file_put_contents($this->repositoryRoot . '/test.php', '<?php echo "Hello World"; ?>');
@@ -32,8 +32,8 @@ class RepoPHPTest extends TestCase
         if (! is_dir($vendorBinDir)) {
             mkdir($vendorBinDir, 0777, true);
         }
-        copy($this->tokenCounterPath, $vendorBinDir . '/token-counter');
-        chmod($vendorBinDir . '/token-counter', 0755);
+        copy($this->tokenCounterPath, $vendorBinDir . '/tokencounter');
+        chmod($vendorBinDir . '/tokencounter', 0755);
     }
 
     protected function tearDown(): void
@@ -59,7 +59,7 @@ class RepoPHPTest extends TestCase
         }
 
         // Clean up vendor bin token counter
-        $vendorTokenCounter = dirname(__DIR__, 3) . '/bin/token-counter';
+        $vendorTokenCounter = dirname(__DIR__, 3) . '/bin/tokencounter';
         if (file_exists($vendorTokenCounter)) {
             unlink($vendorTokenCounter);
         }

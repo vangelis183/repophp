@@ -2,12 +2,13 @@
 
 namespace Vangelis\RepoPHP\Analyzers;
 
+use Vangelis\RepoPHP\Services\BinaryFileDetector;
 use Vangelis\RepoPHP\Exceptions\TokenCounterException;
 
 class TokenCounter
 {
     private string $executablePath;
-    private array $mimeTypeCache = [];
+    private readonly BinaryFileDetector $binaryFileDetector;
 
     public function __construct(string $executablePath)
     {
@@ -15,6 +16,7 @@ class TokenCounter
             throw new TokenCounterException("Token counter executable not found at: $executablePath");
         }
         $this->executablePath = $executablePath;
+        $this->binaryFileDetector = new BinaryFileDetector();
     }
 
     public function countTokens(string $filePath, string $encoding): int
@@ -54,35 +56,6 @@ class TokenCounter
 
     private function isBinaryFile(string $filePath): bool
     {
-        if (! file_exists($filePath)) {
-            return false;
-        }
-
-        if (isset($this->mimeTypeCache[$filePath])) {
-            return $this->mimeTypeCache[$filePath];
-        }
-
-        $finfo = finfo_open(FILEINFO_MIME_TYPE);
-        $mimeType = finfo_file($finfo, $filePath);
-        finfo_close($finfo);
-
-        $isBinary = ! str_starts_with($mimeType, 'text/')
-            && ! in_array($mimeType, [
-                'application/x-httpd-php',
-                'application/json',
-                'application/xml',
-                'application/javascript',
-                'application/x-javascript',
-                'application/ecmascript',
-                'application/x-yaml',
-                'application/x-perl',
-                'application/x-sh',
-                'application/x-ruby',
-                'application/x-python',
-            ], true);
-
-        $this->mimeTypeCache[$filePath] = $isBinary;
-
-        return $isBinary;
+        return $this->binaryFileDetector->isBinary($filePath);
     }
 }

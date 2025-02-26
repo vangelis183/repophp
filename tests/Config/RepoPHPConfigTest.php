@@ -12,10 +12,9 @@ class RepoPHPConfigTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->tokenCounterPath = __DIR__ . '/../../bin/token-counter';
-        if (! file_exists($this->tokenCounterPath)) {
-            touch($this->tokenCounterPath);
-        }
+        $this->tokenCounterPath = sys_get_temp_dir() . '/tokencounter-test-' . uniqid();
+        file_put_contents($this->tokenCounterPath, '#!/bin/bash' . PHP_EOL . 'echo "10"');
+        chmod($this->tokenCounterPath, 0755);
     }
 
     protected function tearDown(): void
@@ -83,14 +82,18 @@ class RepoPHPConfigTest extends TestCase
 
     public function testTokenCounterBinaryNotFound(): void
     {
-        if (file_exists($this->tokenCounterPath)) {
-            unlink($this->tokenCounterPath);
-        }
+        $nonExistentPath = '/path/to/nonexistent/binary';
 
         $this->expectException(TokenCounterException::class);
         $this->expectExceptionMessage('Token counter binary not found');
 
-        new RepoPHPConfig();
+        new RepoPHPConfig(
+            RepoPHPConfig::FORMAT_MARKDOWN,
+            ['*.txt'],
+            false,
+            $nonExistentPath,
+            RepoPHPConfig::ENCODING_P50K
+        );
     }
 
     public function testDefaultExcludePatterns(): void
