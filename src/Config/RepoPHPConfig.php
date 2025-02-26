@@ -55,7 +55,7 @@ class RepoPHPConfig
         $this->respectGitignore = $respectGitignore;
         $this->tokenCounterPath = $tokenCounterPath ?? $this->findTokenCounterBinary();
         $this->encoding = $encoding;
-        if (!file_exists($this->tokenCounterPath)) {
+        if (! file_exists($this->tokenCounterPath)) {
             throw new TokenCounterException('Token counter binary not found');
         }
         $this->compress = $compress;

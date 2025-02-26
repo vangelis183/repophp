@@ -10,7 +10,7 @@ class BinaryFileDetector
 
     public function isBinary(string $filePath): bool
     {
-        if (!file_exists($filePath)) {
+        if (! file_exists($filePath)) {
             return false;
         }
 
@@ -22,8 +22,8 @@ class BinaryFileDetector
         $mimeType = finfo_file($finfo, $filePath);
         finfo_close($finfo);
 
-        $isBinary = !str_starts_with($mimeType, 'text/')
-            && !in_array($mimeType, [
+        $isBinary = ! str_starts_with($mimeType, 'text/')
+            && ! in_array($mimeType, [
                 'application/x-httpd-php',
                 'application/json',
                 'application/xml',

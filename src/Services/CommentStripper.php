@@ -37,10 +37,11 @@ class CommentStripper
                     case T_END_HEREDOC:
                     case T_START_HEREDOC:
                         $output .= $tokenValue;
+
                         break;
 
                     default:
-                        if (!$inMultilineComment) {
+                        if (! $inMultilineComment) {
                             $output .= $tokenValue;
                         }
                 }
@@ -50,7 +51,7 @@ class CommentStripper
                     $inMultilineComment = true;
                 } elseif ($token === '*/' && $inMultilineComment) {
                     $inMultilineComment = false;
-                } elseif (!$inMultilineComment) {
+                } elseif (! $inMultilineComment) {
                     $output .= $token;
                 }
             }

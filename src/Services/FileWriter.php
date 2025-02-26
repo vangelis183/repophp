@@ -113,8 +113,11 @@ class FileWriter
         ];
 
         if ($this->output) {
-            $this->output->writeln(sprintf("✨ Adding: <info>%s</info> (%s chars)", $relativePath,
-                number_format(strlen($content), 0, '.', ',')));
+            $this->output->writeln(sprintf(
+                "✨ Adding: <info>%s</info> (%s chars)",
+                $relativePath,
+                number_format(strlen($content), 0, '.', ',')
+            ));
         }
 
         $formatter = $this->formatterFactory->createFormatter($this->config->getFormat());
@@ -142,14 +145,19 @@ class FileWriter
             $this->output->writeln(sprintf("       Output: %s", basename($this->outputPath)));
 
             // Sort files by tokens count
-            usort($this->fileStats, fn($a, $b) => $b['tokens'] <=> $a['tokens']);
+            usort($this->fileStats, fn ($a, $b) => $b['tokens'] <=> $a['tokens']);
             $top5 = array_slice($this->fileStats, 0, 5);
 
             $this->output->writeln("\n📈 Top 5 Files by Character Count and Token Count:");
             $this->output->writeln("──────────────────────────────────────────────────");
             foreach ($top5 as $i => $stat) {
-                $this->output->writeln(sprintf("%d.  %s (%s chars, %s tokens)", $i + 1, $stat['path'],
-                    number_format($stat['chars'], 0, '.', ','), number_format($stat['tokens'], 0, '.', ',')));
+                $this->output->writeln(sprintf(
+                    "%d.  %s (%s chars, %s tokens)",
+                    $i + 1,
+                    $stat['path'],
+                    number_format($stat['chars'], 0, '.', ','),
+                    number_format($stat['tokens'], 0, '.', ',')
+                ));
             }
 
             if (! empty($gitInfo['branch'])) {

@@ -52,7 +52,8 @@ class PackCommand extends Command
             'compress',
             InputOption::VALUE_NONE,
             'Remove comments and empty lines from files'
-        );;
+        );
+        ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
