@@ -31,10 +31,21 @@ class GitignoreReader
 
     private function convertGitignoreToRegex(string $pattern): string
     {
-        $pattern = preg_quote($pattern, '/');
-        $pattern = str_replace('\*', '.*', $pattern);
-        $pattern = str_replace('\?', '.', $pattern);
+        // Remove trailing spaces
+        $pattern = trim($pattern);
 
-        return "/^" . str_replace('/', '\/', $pattern) . "$/";
+        // Escape special regex characters, but not the gitignore wildcards
+        $pattern = preg_quote($pattern, '/');
+
+        // Convert gitignore wildcards to regex patterns
+        $pattern = str_replace('\*\*', '.*', $pattern); // Handle ** first
+        $pattern = str_replace('\*', '[^/]*', $pattern); // Single * doesn't match /
+        $pattern = str_replace('\?', '[^/]', $pattern); // ? matches single character except /
+
+        // Handle directory separator
+        $pattern = str_replace('/', '\/', $pattern);
+
+        // Add start and end anchors
+        return "/^{$pattern}$/";
     }
 }

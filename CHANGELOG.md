@@ -2,6 +2,38 @@
 
 All notable changes to `RepoPHP` will be documented in this file.
 
+## 0.5.0 2025-02-27
+
+### What's Changed
+
+#### Added
+
+- Added token encoding support with multiple options (cl100k_base, p50k_base, r50k_base, p50k_edit)
+- Added encoding configuration to RepoPHPConfig class
+- Implemented token counting functionality using external binary
+- Added command-line option for specifying token encoding (-e, --encoding)
+
+#### Changed
+
+- Updated FileWriter to use configured encoding for token counting
+- Modified PackCommand to include encoding parameter
+- Improved command-line interface with proper option shortcuts
+- Enhanced configuration handling for token counter binary path
+
+#### Fixed
+
+- Fixed missing encoding parameter in token counting calls
+- Corrected option shortcut naming in PackCommand
+- Fixed binary file detection in token counter
+- Resolved path handling issues for token counter executable
+
+#### Technical
+
+- Added unit tests for TokenCounter class
+- Implemented comprehensive tests for RepoPHPConfig
+- Added validation for supported encodings
+- Enhanced error handling for token counter binary
+
 ## 0.4.0 - 2025-02-25
 
 ### What's Changed

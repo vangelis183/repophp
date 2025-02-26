@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Vangelis\RepoPHP\Services;
 
+use Vangelis\RepoPHP\Analyzers\TokenCounter;
 use Symfony\Component\Console\Output\OutputInterface;
 use Vangelis\RepoPHP\Config\RepoPHPConfig;
 use Vangelis\RepoPHP\Exceptions\FileWriteException;
@@ -15,6 +16,10 @@ class FileWriter
 
     private int $totalChars = 0;
 
+    private int $totalTokens = 0;
+
+    private array $fileStats = [];
+
     private readonly ?OutputInterface $output;
 
     private readonly string $outputPath;
@@ -24,6 +29,7 @@ class FileWriter
     public function __construct(
         private readonly FormatterFactory $formatterFactory,
         private readonly RepoPHPConfig $config,
+        private readonly TokenCounter $tokenCounter,
         ?OutputInterface $output = null,
         string $outputPath = '',
         string $repositoryPath = ''
@@ -33,6 +39,9 @@ class FileWriter
         $this->repoHelper = new RepoHelper($repositoryPath, $output);
     }
 
+    /**
+     * @throws \Vangelis\RepoPHP\Exceptions\UnsupportedFormatException
+     */
     public function writeHeader($outputHandle): void
     {
         if ($this->output) {
@@ -53,6 +62,10 @@ class FileWriter
         fwrite($outputHandle, $header.$formatter->getSeparator());
     }
 
+    /**
+     * @throws \Vangelis\RepoPHP\Exceptions\UnsupportedFormatException
+     * @throws \Vangelis\RepoPHP\Exceptions\FileWriteException
+     */
     public function writeContent($outputHandle, string $relativePath, string $filePath): void
     {
         if (! is_readable($filePath)) {
@@ -62,8 +75,19 @@ class FileWriter
         }
 
         $content = $this->readFile($filePath);
-        $this->totalChars += strlen($content);
+        $chars = strlen($content);
+
+        $tokens = $this->tokenCounter->countTokens($filePath, $this->config->getEncoding());
+
+        $this->totalChars += $chars;
+        $this->totalTokens += $tokens;
         $this->totalFiles++;
+
+        $this->fileStats[] = [
+            'path' => $relativePath,
+            'chars' => $chars,
+            'tokens' => $tokens,
+        ];
 
         if ($this->output) {
             $this->output->writeln(sprintf(
@@ -93,7 +117,25 @@ class FileWriter
             $this->output->writeln("────────────────");
             $this->output->writeln(sprintf("  Total Files: %s files", number_format($this->totalFiles, 0, '.', '.')));
             $this->output->writeln(sprintf("  Total Chars: %s chars", number_format($this->totalChars, 0, '.', '.')));
+            $this->output->writeln(sprintf(" Total Tokens: %s tokens", number_format($this->totalTokens, 0, '.', '.')));
+            $this->output->writeln(sprintf("     Encoding: %s", $this->config->getEncoding()));
             $this->output->writeln(sprintf("       Output: %s", basename($this->outputPath)));
+
+            // Sort files by tokens count
+            usort($this->fileStats, fn ($a, $b) => $b['tokens'] <=> $a['tokens']);
+            $top5 = array_slice($this->fileStats, 0, 5);
+
+            $this->output->writeln("\n📈 Top 5 Files by Character Count and Token Count:");
+            $this->output->writeln("──────────────────────────────────────────────────");
+            foreach ($top5 as $i => $stat) {
+                $this->output->writeln(sprintf(
+                    "%d.  %s (%s chars, %s tokens)",
+                    $i + 1,
+                    $stat['path'],
+                    number_format($stat['chars'], 0, '.', ','),
+                    number_format($stat['tokens'], 0, '.', ',')
+                ));
+            }
 
             if (! empty($gitInfo['branch'])) {
                 $this->output->writeln("\n📌 Git Info:");
