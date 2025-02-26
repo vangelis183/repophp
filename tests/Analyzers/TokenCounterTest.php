@@ -67,8 +67,12 @@ class TokenCounterTest extends TestCase
         file_put_contents($failingExecutable, '#!/bin/bash'.PHP_EOL.'exit 1');
         chmod($failingExecutable, 0755);
 
+        // Create test file
+        $testFile = $this->testDir.'/test.txt';
+        file_put_contents($testFile, 'Test content');
+
         $this->expectException(TokenCounterException::class);
         $counter = new TokenCounter($failingExecutable);
-        $counter->countTokens($this->testDir.'/test.txt', 'utf-8');
+        $counter->countTokens($testFile, 'utf-8');
     }
 }

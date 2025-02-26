@@ -2,8 +2,8 @@
 
 namespace Vangelis\RepoPHP\Analyzers;
 
-use Vangelis\RepoPHP\Exceptions\TokenCounterException;
 use Vangelis\RepoPHP\Services\BinaryFileDetector;
+use Vangelis\RepoPHP\Exceptions\TokenCounterException;
 
 class TokenCounter
 {
@@ -22,6 +22,10 @@ class TokenCounter
     public function countTokens(string $filePath, string $encoding): int
     {
         if ($this->isBinaryFile($filePath)) {
+            return 0;
+        }
+        // Skip non-text files or special files like .gitignore
+        if ($this->isSpecialFile($filePath) || ! $this->isTextFile($filePath)) {
             return 0;
         }
 
@@ -57,5 +61,26 @@ class TokenCounter
     private function isBinaryFile(string $filePath): bool
     {
         return $this->binaryFileDetector->isBinary($filePath);
+    }
+
+    private function isTextFile(string $filePath): bool
+    {
+        $finfo = finfo_open(FILEINFO_MIME);
+        $mimeType = finfo_file($finfo, $filePath);
+        finfo_close($finfo);
+
+        return str_contains($mimeType, 'text/') || str_contains($mimeType, '/xml');
+    }
+
+    private function isSpecialFile(string $filePath): bool
+    {
+        $specialFiles = [
+            '.gitignore',
+            '.gitattributes',
+            '.env',
+            '.editorconfig',
+        ];
+
+        return in_array(basename($filePath), $specialFiles, true);
     }
 }
