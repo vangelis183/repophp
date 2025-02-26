@@ -103,16 +103,30 @@ BASH;
 
     public function testConstructor()
     {
-        $repoPHP = new RepoPHP($this->repositoryRoot, $this->outputPath, RepoPHPConfig::FORMAT_PLAIN, [], true, null,
-            RepoPHPConfig::ENCODING_CL100K);
+        $repoPHP = new RepoPHP(
+            $this->repositoryRoot,
+            $this->outputPath,
+            RepoPHPConfig::FORMAT_PLAIN,
+            [],
+            true,
+            null,
+            RepoPHPConfig::ENCODING_CL100K
+        );
 
         $this->assertInstanceOf(RepoPHP::class, $repoPHP);
     }
 
     public function testPack()
     {
-        $repoPHP = new RepoPHP($this->repositoryRoot, $this->outputPath, RepoPHPConfig::FORMAT_PLAIN, [], true, null,
-            RepoPHPConfig::ENCODING_CL100K);
+        $repoPHP = new RepoPHP(
+            $this->repositoryRoot,
+            $this->outputPath,
+            RepoPHPConfig::FORMAT_PLAIN,
+            [],
+            true,
+            null,
+            RepoPHPConfig::ENCODING_CL100K
+        );
 
         $repoPHP->pack();
 
@@ -148,7 +162,11 @@ BASH;
 
     public function testPackWithoutGitignoreRespect()
     {
-        $repoPHP = new RepoPHP($this->repositoryRoot, $this->outputPath, RepoPHPConfig::FORMAT_PLAIN, [],
+        $repoPHP = new RepoPHP(
+            $this->repositoryRoot,
+            $this->outputPath,
+            RepoPHPConfig::FORMAT_PLAIN,
+            [],
             false // gitignore nicht beachten
         );
 
@@ -161,7 +179,10 @@ BASH;
 
     public function testPackWithExcludePatterns()
     {
-        $repoPHP = new RepoPHP($this->repositoryRoot, $this->outputPath, RepoPHPConfig::FORMAT_PLAIN,
+        $repoPHP = new RepoPHP(
+            $this->repositoryRoot,
+            $this->outputPath,
+            RepoPHPConfig::FORMAT_PLAIN,
             ['*.php'] // PHP-Dateien ausschließen
         );
 
