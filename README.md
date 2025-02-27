@@ -11,7 +11,7 @@ RepoPHP is a PHP package that packs a repository into a single AI-friendly file 
 You can install the package via composer:
 
 ```bash  
-composer require vangelis/repophp
+composer require vangelis/repophp --dev
 ```  
   
 ## Usage  
