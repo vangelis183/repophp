@@ -5,54 +5,45 @@ namespace Vangelis\RepoPHP\Tests\Unit;
 use PHPUnit\Framework\TestCase;
 use Vangelis\RepoPHP\Config\RepoPHPConfig;
 use Vangelis\RepoPHP\RepoPHP;
+use Symfony\Component\Console\Output\BufferedOutput;
+use Symfony\Component\Console\Output\OutputInterface;
 
 class RepoPHPTest extends TestCase
 {
     private string $repositoryRoot;
-
     private string $outputPath;
-
+    private ?OutputInterface $output;
     private string $tokenCounterPath;
 
     protected function setUp(): void
     {
-        $this->repositoryRoot = sys_get_temp_dir().'/repophp-test-'.uniqid();
-        $this->outputPath = sys_get_temp_dir().'/repophp-output-'.uniqid().'.txt';
-        $this->tokenCounterPath = sys_get_temp_dir().'/tokencounter-'.uniqid();
+        $this->output = new BufferedOutput();
+    $this->repositoryRoot = sys_get_temp_dir().'/repophp-test-'.uniqid();
+    $this->outputPath = sys_get_temp_dir().'/repophp-output-'.uniqid().'.txt';
 
-        mkdir($this->repositoryRoot, 0777, true);
-        file_put_contents($this->repositoryRoot.'/test.php', '<?php echo "Hello World"; ?>');
-        file_put_contents($this->repositoryRoot.'/.gitignore', 'ignored.php');
-        file_put_contents($this->repositoryRoot.'/ignored.php', '<?php echo "Ignored file"; ?>');
-
-        // Create mock token counter binary
-        $mockScript = <<<'BASH'
-#!/bin/bash
-if [ ! -f "$1" ]; then
-    echo "File not found" >&2
-    exit 1
-fi
-echo "10"
-exit 0
-BASH;
-        file_put_contents($this->tokenCounterPath, $mockScript);
-        chmod($this->tokenCounterPath, 0755);
-
-        // Create bin directory in vendor and copy token counter
-        $vendorBinDir = dirname(__DIR__, 3).'/bin';
-        if (! is_dir($vendorBinDir)) {
-            mkdir($vendorBinDir, 0777, true);
-        }
-        copy($this->tokenCounterPath, $vendorBinDir.'/tokencounter');
-        chmod($vendorBinDir.'/tokencounter', 0755);
-        // Verify the binary is executable
-        if (! is_executable($vendorBinDir.'/tokencounter')) {
-            throw new \RuntimeException('Token counter binary is not executable');
-        }
+    mkdir($this->repositoryRoot, 0777, true);
+    file_put_contents($this->repositoryRoot.'/test.php', '<?php echo "Hello World"; ?>');
+    file_put_contents($this->repositoryRoot.'/.gitignore', 'ignored.php');
+    file_put_contents($this->repositoryRoot.'/ignored.php', '<?php echo "Ignored file"; ?>');
+    
+    // Create mock token counter binary
+    $this->tokenCounterPath = sys_get_temp_dir().'/mock-token-counter-'.uniqid();
+    file_put_contents($this->tokenCounterPath, '#!/bin/bash'.PHP_EOL.'echo "42"');
+    chmod($this->tokenCounterPath, 0755);
     }
 
     protected function tearDown(): void
     {
+        // Add token counter cleanup
+    if (file_exists($this->tokenCounterPath)) {
+        unlink($this->tokenCounterPath);
+    }
+    
+    // Rest of existing tearDown code
+    if (file_exists($this->outputPath)) {
+        unlink($this->outputPath);
+    }
+
         if (file_exists($this->outputPath)) {
             unlink($this->outputPath);
         }
@@ -69,16 +60,6 @@ BASH;
             unlink($this->repositoryRoot.'/ignored.php');
         }
 
-        if (file_exists($this->tokenCounterPath)) {
-            unlink($this->tokenCounterPath);
-        }
-
-        // Clean up vendor bin token counter
-        $vendorTokenCounter = dirname(__DIR__, 3).'/bin/tokencounter';
-        if (file_exists($vendorTokenCounter)) {
-            unlink($vendorTokenCounter);
-        }
-
         if (is_dir($this->repositoryRoot)) {
             $this->removeDirectory($this->repositoryRoot);
         }
@@ -86,10 +67,7 @@ BASH;
 
     private function removeDirectory(string $path): void
     {
-        $files = array_diff(scandir($path), [
-            '.',
-            '..',
-        ]);
+        $files = array_diff(scandir($path), ['.', '..']);
         foreach ($files as $file) {
             $filePath = $path.'/'.$file;
             if (is_dir($filePath)) {
@@ -101,7 +79,7 @@ BASH;
         rmdir($path);
     }
 
-    public function testConstructor()
+    public function testConstructor(): void
     {
         $repoPHP = new RepoPHP(
             $this->repositoryRoot,
@@ -109,33 +87,35 @@ BASH;
             RepoPHPConfig::FORMAT_PLAIN,
             [],
             true,
-            null,
+            $this->output,
             RepoPHPConfig::ENCODING_CL100K
         );
 
         $this->assertInstanceOf(RepoPHP::class, $repoPHP);
     }
 
-    public function testPack()
-    {
-        $repoPHP = new RepoPHP(
-            $this->repositoryRoot,
-            $this->outputPath,
-            RepoPHPConfig::FORMAT_PLAIN,
-            [],
-            true,
-            null,
-            RepoPHPConfig::ENCODING_CL100K
-        );
+    public function testPack(): void
+{
+    $repoPHP = new RepoPHP(
+        $this->repositoryRoot,
+        $this->outputPath,
+        RepoPHPConfig::FORMAT_PLAIN,
+        [],
+        true,
+        $this->output,
+        RepoPHPConfig::ENCODING_CL100K,
+        false, // compress
+        $this->tokenCounterPath // Pass the mock token counter path
+    );
 
-        $repoPHP->pack();
+    $repoPHP->pack();
 
-        $this->assertFileExists($this->outputPath);
-        $content = file_get_contents($this->outputPath);
-        $this->assertStringContainsString('test.php', $content);
-    }
+    $this->assertFileExists($this->outputPath);
+    $content = file_get_contents($this->outputPath);
+    $this->assertStringContainsString('test.php', $content);
+}
 
-    public function testPackWithGitignoreRespect()
+    public function testPackWithGitignoreRespect(): void
     {
         // Initialize Git repository
         exec('git -C '.escapeshellarg($this->repositoryRoot).' init');
@@ -150,24 +130,37 @@ BASH;
         exec('git -C '.escapeshellarg($this->repositoryRoot).' add .');
         exec('git -C '.escapeshellarg($this->repositoryRoot).' commit -m "Add files"');
 
-        $repoPHP = new RepoPHP($this->repositoryRoot, $this->outputPath, RepoPHPConfig::FORMAT_PLAIN, [], true);
+        $repoPHP = new RepoPHP(
+            $this->repositoryRoot,
+            $this->outputPath,
+            RepoPHPConfig::FORMAT_PLAIN,
+            [],
+            true,
+            $this->output,
+            RepoPHPConfig::ENCODING_CL100K,
+            false,
+            $this->tokenCounterPath
+        );
 
         $repoPHP->pack();
 
         $content = file_get_contents($this->outputPath);
         $this->assertStringContainsString('test.php', $content);
-        // Check for the actual ignored file content instead of the pattern
         $this->assertStringNotContainsString('<?php echo "Ignored file"; ?>', $content);
     }
 
-    public function testPackWithoutGitignoreRespect()
+    public function testPackWithoutGitignoreRespect(): void
     {
         $repoPHP = new RepoPHP(
             $this->repositoryRoot,
             $this->outputPath,
             RepoPHPConfig::FORMAT_PLAIN,
             [],
-            false // gitignore nicht beachten
+            true,
+            $this->output,
+            RepoPHPConfig::ENCODING_CL100K,
+            false,
+            $this->tokenCounterPath
         );
 
         $repoPHP->pack();
@@ -177,13 +170,18 @@ BASH;
         $this->assertStringContainsString('ignored.php', $content);
     }
 
-    public function testPackWithExcludePatterns()
+    public function testPackWithExcludePatterns(): void
     {
         $repoPHP = new RepoPHP(
             $this->repositoryRoot,
             $this->outputPath,
             RepoPHPConfig::FORMAT_PLAIN,
-            ['*.php'] // PHP-Dateien ausschließen
+            ['*.php'],
+            false,
+            $this->output,
+            RepoPHPConfig::ENCODING_CL100K,
+            false,
+            $this->tokenCounterPath
         );
 
         $repoPHP->pack();
