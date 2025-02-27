@@ -3,10 +3,10 @@
 namespace Vangelis\RepoPHP\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use Vangelis\RepoPHP\Config\RepoPHPConfig;
-use Vangelis\RepoPHP\RepoPHP;
 use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\Console\Output\OutputInterface;
+use Vangelis\RepoPHP\Config\RepoPHPConfig;
+use Vangelis\RepoPHP\RepoPHP;
 
 class RepoPHPTest extends TestCase
 {
@@ -18,31 +18,31 @@ class RepoPHPTest extends TestCase
     protected function setUp(): void
     {
         $this->output = new BufferedOutput();
-    $this->repositoryRoot = sys_get_temp_dir().'/repophp-test-'.uniqid();
-    $this->outputPath = sys_get_temp_dir().'/repophp-output-'.uniqid().'.txt';
+        $this->repositoryRoot = sys_get_temp_dir().'/repophp-test-'.uniqid();
+        $this->outputPath = sys_get_temp_dir().'/repophp-output-'.uniqid().'.txt';
 
-    mkdir($this->repositoryRoot, 0777, true);
-    file_put_contents($this->repositoryRoot.'/test.php', '<?php echo "Hello World"; ?>');
-    file_put_contents($this->repositoryRoot.'/.gitignore', 'ignored.php');
-    file_put_contents($this->repositoryRoot.'/ignored.php', '<?php echo "Ignored file"; ?>');
-    
-    // Create mock token counter binary
-    $this->tokenCounterPath = sys_get_temp_dir().'/mock-token-counter-'.uniqid();
-    file_put_contents($this->tokenCounterPath, '#!/bin/bash'.PHP_EOL.'echo "42"');
-    chmod($this->tokenCounterPath, 0755);
+        mkdir($this->repositoryRoot, 0777, true);
+        file_put_contents($this->repositoryRoot.'/test.php', '<?php echo "Hello World"; ?>');
+        file_put_contents($this->repositoryRoot.'/.gitignore', 'ignored.php');
+        file_put_contents($this->repositoryRoot.'/ignored.php', '<?php echo "Ignored file"; ?>');
+
+        // Create mock token counter binary
+        $this->tokenCounterPath = sys_get_temp_dir().'/mock-token-counter-'.uniqid();
+        file_put_contents($this->tokenCounterPath, '#!/bin/bash'.PHP_EOL.'echo "42"');
+        chmod($this->tokenCounterPath, 0755);
     }
 
     protected function tearDown(): void
     {
         // Add token counter cleanup
-    if (file_exists($this->tokenCounterPath)) {
-        unlink($this->tokenCounterPath);
-    }
-    
-    // Rest of existing tearDown code
-    if (file_exists($this->outputPath)) {
-        unlink($this->outputPath);
-    }
+        if (file_exists($this->tokenCounterPath)) {
+            unlink($this->tokenCounterPath);
+        }
+
+        // Rest of existing tearDown code
+        if (file_exists($this->outputPath)) {
+            unlink($this->outputPath);
+        }
 
         if (file_exists($this->outputPath)) {
             unlink($this->outputPath);
@@ -95,25 +95,25 @@ class RepoPHPTest extends TestCase
     }
 
     public function testPack(): void
-{
-    $repoPHP = new RepoPHP(
-        $this->repositoryRoot,
-        $this->outputPath,
-        RepoPHPConfig::FORMAT_PLAIN,
-        [],
-        true,
-        $this->output,
-        RepoPHPConfig::ENCODING_CL100K,
-        false, // compress
-        $this->tokenCounterPath // Pass the mock token counter path
-    );
+    {
+        $repoPHP = new RepoPHP(
+            $this->repositoryRoot,
+            $this->outputPath,
+            RepoPHPConfig::FORMAT_PLAIN,
+            [],
+            true,
+            $this->output,
+            RepoPHPConfig::ENCODING_CL100K,
+            false, // compress
+            $this->tokenCounterPath // Pass the mock token counter path
+        );
 
-    $repoPHP->pack();
+        $repoPHP->pack();
 
-    $this->assertFileExists($this->outputPath);
-    $content = file_get_contents($this->outputPath);
-    $this->assertStringContainsString('test.php', $content);
-}
+        $this->assertFileExists($this->outputPath);
+        $content = file_get_contents($this->outputPath);
+        $this->assertStringContainsString('test.php', $content);
+    }
 
     public function testPackWithGitignoreRespect(): void
     {
