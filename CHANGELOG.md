@@ -2,32 +2,77 @@
 
 All notable changes to `RepoPHP` will be documented in this file.
 
-## [0.6.0] - 2025-02-27
+## 0.6.0 - 2025-02-27
 
-### Added
+### [0.6.0] - 2025-02-27
+
+#### Added
+
 - New `CommentStripper` service for code compression
 - Added `--compress` flag to `pack` command
 - Support for stripping:
-    - Single-line comments (`//` and `#`)
-    - Multi-line comments (`/* */`)
-    - PHPDoc blocks (`/** */`)
+  - Single-line comments (`//` and `#`)
+  - Multi-line comments (`/* */`)
+  - PHPDoc blocks (`/** */`)
+  
+- Preserve comments in heredoc and nowdoc strings
+- Maintain code indentation after comment removal
+- File size optimization through comment removal
+
+#### Changed
+
+- Updated `FileWriter` to use `CommentStripper` when compression is enabled
+- Modified `PackCommand` to handle compression option
+- Enhanced file size reporting with compression statistics
+- Improved memory usage during file processing
+
+#### Fixed
+
+- Preserve line endings consistency after comment removal
+- Handle edge cases in comment detection
+- Maintain file structure integrity during compression
+- Correct handling of mixed comment styles
+
+#### Technical
+
+- Added comprehensive test suite for `CommentStripper`
+- New test cases for handling different comment types
+- Performance optimizations for large files
+- Improved code documentation
+
+**Full Changelog**: https://github.com/vangelis183/repophp/compare/0.5.0...0.6.0
+
+## [0.6.0] - 2025-02-27
+
+### Added
+
+- New `CommentStripper` service for code compression
+- Added `--compress` flag to `pack` command
+- Support for stripping:
+  - Single-line comments (`//` and `#`)
+  - Multi-line comments (`/* */`)
+  - PHPDoc blocks (`/** */`)
+  
 - Preserve comments in heredoc and nowdoc strings
 - Maintain code indentation after comment removal
 - File size optimization through comment removal
 
 ### Changed
+
 - Updated `FileWriter` to use `CommentStripper` when compression is enabled
 - Modified `PackCommand` to handle compression option
 - Enhanced file size reporting with compression statistics
 - Improved memory usage during file processing
 
 ### Fixed
+
 - Preserve line endings consistency after comment removal
 - Handle edge cases in comment detection
 - Maintain file structure integrity during compression
 - Correct handling of mixed comment styles
 
 ### Technical
+
 - Added comprehensive test suite for `CommentStripper`
 - New test cases for handling different comment types
 - Performance optimizations for large files
