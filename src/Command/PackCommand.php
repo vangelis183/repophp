@@ -92,13 +92,14 @@ class PackCommand extends Command
             // Handle repository based on whether it's remote or local
             if ($isRemote) {
                 $gitService = new GitRepositoryService($output);
-                
+
                 try {
                     $repositoryPath = $gitService->cloneRepository($repository, $branch);
                     $output->writeln("<info>Repository cloned to: {$repositoryPath}</info>");
                     $tempDir = $repositoryPath;
                 } catch (GitRepositoryException $e) {
                     $output->writeln('<error>' . $e->getMessage() . '</error>');
+
                     return Command::FAILURE;
                 }
             } else {
@@ -114,7 +115,7 @@ class PackCommand extends Command
                     false
                 );
 
-                if (!$helper->ask($input, $output, $question)) {
+                if (! $helper->ask($input, $output, $question)) {
                     // User chose not to overwrite, create a new filename with timestamp
                     $pathInfo = pathinfo($outputPath);
                     $newFilename = sprintf(
@@ -135,7 +136,7 @@ class PackCommand extends Command
                 $outputPath,
                 $input->getOption('format'),
                 $input->getOption('exclude'),
-                !$input->getOption('no-gitignore'),
+                ! $input->getOption('no-gitignore'),
                 $output,
                 $input->getOption('encoding'),
                 $input->getOption('compress')

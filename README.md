@@ -57,7 +57,7 @@ Remove comments and empty lines from files for more compact output.
   
 ### Example Usage  
   
-**Local repository:  **
+**Local repository:**
   
 ```bash  
 vendor/bin/repophp pack output.txt /path/to/repository --format=json --exclude="*.log" --exclude=".env.local" --no-gitignore --compress  
