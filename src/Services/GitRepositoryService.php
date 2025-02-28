@@ -31,22 +31,22 @@ class GitRepositoryService
 
         try {
             // Temporäres Verzeichnis erstellen
-            if (!mkdir($this->tempDir, 0777, true) && !is_dir($this->tempDir)) {
+            if (! mkdir($this->tempDir, 0777, true) && ! is_dir($this->tempDir)) {
                 throw new GitRepositoryException("Fehler beim Erstellen des temporären Verzeichnisses: {$this->tempDir}");
             }
 
             // Clone-Befehl vorbereiten
             $command = ['git', 'clone'];
-            
+
             // Tiefe beschränken für schnellere Klone
             $command[] = '--depth=1';
-            
+
             // Branch-Parameter hinzufügen, falls angegeben
             if ($branch) {
                 $command[] = '--branch';
                 $command[] = $branch;
             }
-            
+
             // Repository-URL und Zielverzeichnis
             $command[] = $repositoryUrl;
             $command[] = $this->tempDir;
@@ -63,20 +63,21 @@ class GitRepositoryService
                 }
             });
 
-            if (!$process->isSuccessful()) {
+            if (! $process->isSuccessful()) {
                 throw new ProcessFailedException($process);
             }
 
             return $this->tempDir;
         } catch (\Exception $e) {
             $this->cleanup();
+
             throw new GitRepositoryException('Repository konnte nicht geklont werden: ' . $e->getMessage(), 0, $e);
         }
     }
 
     public function cleanup(): void
     {
-        if (!empty($this->tempDir) && is_dir($this->tempDir)) {
+        if (! empty($this->tempDir) && is_dir($this->tempDir)) {
             $this->deleteDirectory($this->tempDir);
             if ($this->output) {
                 $this->output->writeln("<info>🧹 Temporäres Repository-Verzeichnis wurde bereinigt.</info>");
@@ -86,11 +87,11 @@ class GitRepositoryService
 
     private function deleteDirectory(string $dir): bool
     {
-        if (!file_exists($dir)) {
+        if (! file_exists($dir)) {
             return true;
         }
 
-        if (!is_dir($dir)) {
+        if (! is_dir($dir)) {
             return unlink($dir);
         }
 
@@ -99,7 +100,7 @@ class GitRepositoryService
                 continue;
             }
 
-            if (!$this->deleteDirectory($dir . DIRECTORY_SEPARATOR . $item)) {
+            if (! $this->deleteDirectory($dir . DIRECTORY_SEPARATOR . $item)) {
                 return false;
             }
         }
