@@ -15,7 +15,6 @@ use Vangelis\RepoPHP\Exceptions\GitRepositoryException;
 use Vangelis\RepoPHP\RepoPHP;
 use Vangelis\RepoPHP\Services\GitRepositoryService;
 
-
 class PackCommand extends Command
 {
     protected function configure(): void
@@ -81,16 +80,19 @@ class PackCommand extends Command
 
         if ($remoteUrl) {
             $gitService = new GitRepositoryService($output);
+
             try {
                 $repositoryPath = $gitService->cloneRepository($remoteUrl, $branch);
                 $output->writeln("<info>Repository wurde geklont nach: {$repositoryPath}</info>");
                 $tempDir = $repositoryPath;
             } catch (GitRepositoryException $e) {
                 $output->writeln('<error>' . $e->getMessage() . '</error>');
+
                 return Command::FAILURE;
             }
-        } elseif (!$repositoryPath) {
+        } elseif (! $repositoryPath) {
             $output->writeln('<error>Sie müssen entweder einen lokalen Repository-Pfad oder eine Remote-Repository-URL mit --remote angeben.</error>');
+
             return Command::FAILURE;
         }
 
@@ -138,10 +140,11 @@ class PackCommand extends Command
             return Command::SUCCESS;
         } catch (Exception $e) {
             $output->writeln('<error>'.$e->getMessage().'</error>');
-            
+
             if ($gitService && $tempDir) {
                 $gitService->cleanup();
             }
+
             return Command::FAILURE;
         }
     }
