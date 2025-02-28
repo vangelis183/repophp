@@ -9,13 +9,48 @@ use Exception;
 use Symfony\Component\Console\Application;
 use Vangelis\RepoPHP\Command\PackCommand;
 
-require __DIR__ . '/../vendor/autoload.php';
 
-$application = new Application('RepoPHP', '0.1.0');
+if (isset($GLOBALS['_composer_autoload_path'])) {
+
+    define('REPOPHP_COMPOSER_INSTALL', $GLOBALS['_composer_autoload_path']);
+    unset($GLOBALS['_composer_autoload_path']);
+} else {
+    
+    foreach (array(
+        __DIR__ . '/../../autoload.php',
+        __DIR__ . '/../vendor/autoload.php',
+        __DIR__ . '/vendor/autoload.php'
+    ) as $file) {
+        if (file_exists($file)) {
+            define('REPOPHP_COMPOSER_INSTALL', $file);
+            break;
+        }
+    }
+
+    unset($file);
+}
+
+
+if (!defined('REPOPHP_COMPOSER_INSTALL')) {
+    fwrite(
+        STDERR,
+        'Die Projektabhängigkeiten müssen mit Composer eingerichtet werden:' . PHP_EOL . PHP_EOL .
+        '    composer install' . PHP_EOL . PHP_EOL .
+        'Mehr über Composer erfahren Sie auf https://getcomposer.org/.' . PHP_EOL
+    );
+
+    die(1);
+}
+
+
+require REPOPHP_COMPOSER_INSTALL;
+
+$application = new Application('RepoPHP', '0.7.0');
 $application->add(new PackCommand());
 
 try {
     $application->run();
 } catch (Exception $e) {
-    return $e->getCode();
+    fwrite(STDERR, 'Fehler: ' . $e->getMessage() . PHP_EOL);
+    exit($e->getCode() ?: 1);
 }
