@@ -47,7 +47,7 @@ class GitRepositoryService
             $command[] = $this->tempDir;
 
             $process = new Process($command);
-            $process->setTimeout(300); 
+            $process->setTimeout(300);
             $process->run(function ($type, $buffer): void {
                 if ($this->output) {
                     if (Process::ERR === $type) {
