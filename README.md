@@ -19,52 +19,82 @@ composer require vangelis/repophp --dev
   
 You can use the `pack` command to package a local repository directory into a single file, suitable for processing by AI-based systems.  
   
-### Available Options for the `pack` Command:  
-- **repository** (Required):    
-  The path to the repository directory that you want to pack.  
-  
-- **output** (Required):    
-  The path to the output file where the packed content will be stored.  
-  
-- **--format \<plain|markdown|json|xml>** *(default: plain)*:    
-  Specifies the format of the output file. Supported formats:  
-    - `plain`: Plain text format.  
-    - `markdown`: Markdown format for better readability.  
-    - `json`: JSON format for structured data.  
-    - `xml`: XML format for structured data.  
-  
-- **--exclude \<pattern1,pattern2,...>**:    
-  Additional file patterns to exclude during the packing process.    
-  These patterns are added to the default exclusions (e.g., `.env`, `composer.lock`, etc.).  
-  
-- **--no-gitignore**:    
-  If this flag is provided, `.gitignore` files will not be used to exclude files.  
+### Available Options for the pack Command:
+
+#### Required Arguments:
+- **output**: The path to the `output` file where the packed content will be stored.
+
+- **repository**: The path to the `repository` directory that you want to pack or a remote repository URL if used with the  --remote flag.
+
+#### Optional Flags and Settings:
+- **--remote, -rem:**
+Treat the repository argument as a remote Git repository URL.
+
+- **--branch <branch>, -bra <branch> (default: main):**
+Branch to checkout when cloning a remote repository.
+
+- **--format <plain|markdown|json|xml>, -fmt <format> (default: plain):**
+Specifies the format of the output file. Supported formats:
+
+  - `plain`: Plain text format.
+  - `markdown`: Markdown format for better readability.
+  - `json`: JSON format for structured data.
+  - `xml`: XML format for structured data.
+
+- **--encoding <encoding>, -enc <encoding> (default: p50k_base):**
+Token encoding to use (cl100k_base, p50k_base, r50k_base, p50k_edit).
+
+- **--exclude <pattern>, -exc <pattern>:**
+Additional file patterns to exclude during the packing process.
+These patterns are added to the default exclusions (e.g., .env, composer.lock, etc.).
+This option can be used multiple times to add multiple patterns.
+
+- **--no-gitignore, -nog:**
+If this flag is provided, .gitignore files will not be used to exclude files.
+
+- **--compress, -com:**
+Remove comments and empty lines from files for more compact output.
   
 ### Example Usage  
   
-Use the following command to pack a local repository:  
+**Local repository:  **
   
 ```bash  
-vendor/bin/repophp pack /path/to/repository /path/to/output --format=json --exclude="*.log,.env.local" --no-gitignore --compress  
+vendor/bin/repophp pack output.txt /path/to/repository --format=json --exclude="*.log" --exclude=".env.local" --no-gitignore --compress  
 ```  
 
-Remote Repository:
+**Remote Repository:**
 
 ```bash
-vendor/bin/repophp pack /path/to/output --remote=https://github.com/username/repo.git --branch=develop --format=markdown
+vendor/bin/repophp pack output.txt https://github.com/username/repository.git --remote --branch develop
 ```
 
+**With short option names:**
+
+```bash
+vendor/bin/repophp pack output.txt /path/to/repo -fmt json -com -enc cl100k_base
+```
+
+**Complex example:**
+
+```bash
+vendor/bin/repophp pack output.txt https://github.com/vangelis183/repophp.git --remote --branch main --compress --encoding cl100k_base --format plain
+```
+
+
 #### Breakdown:
-- Packs the repository located at `/path/to/repository`.
-- Stores the packed content in `/path/to/output`.
-- Uses `json` as the output format.
-- Excludes files matching the `*.log` and `.env.local` patterns.
-- Ignores `.gitignore` rules.
-- Compresses the output file. Strip comments and empty lines.
+- Packs the repository located at `/path/to/repository` or clones the remote repository URL.
+- Stores the packed content in `/path/to/output.txt`.
+- Uses the specified output format (json, plain, markdown, or xml).
+- Excludes files matching the specified patterns.
+- Option to ignore `.gitignore` rules.
+- Option to compress the output by removing comments and empty lines.
+- For remote repositories, checks out the specified branch.
+- Uses the specified token encoding for calculating token counts.
 
 ### Additional Behavior
 - **Overwrite Handling**:    
-  If the output file already exists, you will be prompted to confirm whether you want to overwrite the file. If you choose not to overwrite, a new file will be created with a timestamp appended to its name.
+If the output file already exists, you will be prompted to confirm whether you want to overwrite the file. If you choose not to overwrite, a new file will be created with a timestamp appended to its name.
 
 - **Supported Formats**:    
   The following formats are supported (as defined in `RepoPHP`):
