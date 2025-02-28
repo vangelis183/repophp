@@ -11,7 +11,9 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
+use Vangelis\RepoPHP\Exceptions\GitRepositoryException;
 use Vangelis\RepoPHP\RepoPHP;
+use Vangelis\RepoPHP\Services\GitRepositoryService;
 
 class PackCommand extends Command
 {
@@ -25,6 +27,17 @@ class PackCommand extends Command
             'output',
             InputArgument::REQUIRED,
             'Path to the output file'
+        )->addOption(
+            'remote',
+            'remote',
+            InputOption::VALUE_OPTIONAL,
+            'URL of the remote Git repository to clone and pack'
+        )->addOption(
+            'branch',
+            'branch',
+            InputOption::VALUE_OPTIONAL,
+            'Branch to checkout when cloning a remote repository',
+            'main'
         )->addOption(
             'format',
             'format',
@@ -59,7 +72,29 @@ class PackCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $repositoryPath = $input->getArgument('repository');
+        $remoteUrl = $input->getOption('remote');
         $outputPath = $input->getArgument('output');
+        $branch = $input->getOption('branch');
+        $gitService = null;
+        $tempDir = null;
+
+        if ($remoteUrl) {
+            $gitService = new GitRepositoryService($output);
+
+            try {
+                $repositoryPath = $gitService->cloneRepository($remoteUrl, $branch);
+                $output->writeln("<info>Repository wurde geklont nach: {$repositoryPath}</info>");
+                $tempDir = $repositoryPath;
+            } catch (GitRepositoryException $e) {
+                $output->writeln('<error>' . $e->getMessage() . '</error>');
+
+                return Command::FAILURE;
+            }
+        } elseif (! $repositoryPath) {
+            $output->writeln('<error>Sie müssen entweder einen lokalen Repository-Pfad oder eine Remote-Repository-URL mit --remote angeben.</error>');
+
+            return Command::FAILURE;
+        }
 
         // Add warning if file exists
         if (file_exists($outputPath)) {
@@ -105,6 +140,10 @@ class PackCommand extends Command
             return Command::SUCCESS;
         } catch (Exception $e) {
             $output->writeln('<error>'.$e->getMessage().'</error>');
+
+            if ($gitService && $tempDir) {
+                $gitService->cleanup();
+            }
 
             return Command::FAILURE;
         }
