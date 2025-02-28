@@ -39,7 +39,7 @@ class GitRepositoryServiceTest extends TestCase
             $this->assertFileExists($repoDir . '/composer.json');
 
             $output = $this->output->fetch();
-            $this->assertStringContainsString('Klone Repository', $output);
+            $this->assertStringContainsString('Clone repository', $output);
 
             $branchDir = $this->gitService->cloneRepository('https://github.com/vangelis183/repophp.git', 'main');
             $this->assertDirectoryExists($branchDir);

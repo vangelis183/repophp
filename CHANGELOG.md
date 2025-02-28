@@ -2,7 +2,37 @@
 
 All notable changes to `RepoPHP` will be documented in this file.
 
-## 0.6.0 - 2025-02-27
+### [0.7.0] - 2025-03-10
+#### Added
+- Implemented incremental/diff-based packing with new --incremental flag
+- Added repository splitting for large codebases with --split option
+- Created advanced filtering options:
+- Filter by modification date (--since, --until)
+- Filter by content patterns (--content-match)
+- Filter by file size (--min-size, --max-size)
+- Added repository analytics and basic metrics
+- Implemented model-specific optimization profiles (--model option)
+
+#### Changed
+- Improved memory usage for large repositories
+- Enhanced file collection algorithm for better performance
+- Updated configuration handling for new filtering options
+- Optimized token counting for incremental updates
+- Improved handling of large binary files
+
+#### Fixed
+- Resolved memory issues when processing repositories over 1GB
+- Fixed path normalization on different operating systems
+- Corrected handling of symlinks in repository structure
+- Improved error reporting for failed incremental updates
+- Fixed encoding detection for non-UTF8 files
+
+#### Technical
+- Added comprehensive test suite for incremental packing
+- Created benchmarking tools for performance testing
+- Improved documentation with examples for new features
+- Enhanced code organization with dedicated analyzer services
+- Optimized memory footprint for large repository processing
 
 ### [0.6.0] - 2025-02-27
 

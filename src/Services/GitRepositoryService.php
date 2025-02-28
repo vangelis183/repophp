@@ -23,36 +23,31 @@ class GitRepositoryService
         $this->tempDir = sys_get_temp_dir() . '/repophp-' . uniqid();
 
         if ($this->output) {
-            $this->output->writeln("<info>🔄 Klone Repository von: {$repositoryUrl}</info>");
+            $this->output->writeln("<info>🔄 Clone repository from: {$repositoryUrl}</info>");
             if ($branch) {
-                $this->output->writeln("<info>🌿 Verwende Branch: {$branch}</info>");
+                $this->output->writeln("<info>🌿 Using branch: {$branch}</info>");
             }
         }
 
         try {
-            // Temporäres Verzeichnis erstellen
             if (! mkdir($this->tempDir, 0777, true) && ! is_dir($this->tempDir)) {
-                throw new GitRepositoryException("Fehler beim Erstellen des temporären Verzeichnisses: {$this->tempDir}");
+                throw new GitRepositoryException("Error creating temporary folder: {$this->tempDir}");
             }
 
-            // Clone-Befehl vorbereiten
             $command = ['git', 'clone'];
 
-            // Tiefe beschränken für schnellere Klone
             $command[] = '--depth=1';
 
-            // Branch-Parameter hinzufügen, falls angegeben
             if ($branch) {
                 $command[] = '--branch';
                 $command[] = $branch;
             }
 
-            // Repository-URL und Zielverzeichnis
             $command[] = $repositoryUrl;
             $command[] = $this->tempDir;
 
             $process = new Process($command);
-            $process->setTimeout(300); // 5 Minuten Timeout
+            $process->setTimeout(300); 
             $process->run(function ($type, $buffer): void {
                 if ($this->output) {
                     if (Process::ERR === $type) {
@@ -71,7 +66,7 @@ class GitRepositoryService
         } catch (\Exception $e) {
             $this->cleanup();
 
-            throw new GitRepositoryException('Repository konnte nicht geklont werden: ' . $e->getMessage(), 0, $e);
+            throw new GitRepositoryException('Repository could not be cloned: ' . $e->getMessage(), 0, $e);
         }
     }
 
@@ -80,7 +75,7 @@ class GitRepositoryService
         if (! empty($this->tempDir) && is_dir($this->tempDir)) {
             $this->deleteDirectory($this->tempDir);
             if ($this->output) {
-                $this->output->writeln("<info>🧹 Temporäres Repository-Verzeichnis wurde bereinigt.</info>");
+                $this->output->writeln("<info>🧹 Temporary repository folder was removed.</info>");
             }
         }
     }
