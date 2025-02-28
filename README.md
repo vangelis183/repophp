@@ -42,11 +42,17 @@ You can use the `pack` command to package a local repository directory into a si
   
 ### Example Usage  
   
-Use the following command to pack a repository:  
+Use the following command to pack a local repository:  
   
 ```bash  
 vendor/bin/repophp pack /path/to/repository /path/to/output --format=json --exclude="*.log,.env.local" --no-gitignore --compress  
 ```  
+
+Remote Repository:
+
+```bash
+vendor/bin/repophp pack /path/to/output --remote=https://github.com/username/repo.git --branch=develop --format=markdown
+```
 
 #### Breakdown:
 - Packs the repository located at `/path/to/repository`.
@@ -98,9 +104,19 @@ Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed re
 - [x] Token Count for each file and entire repo
 - [x] Consider different encodings
 - [x] Add compression (Comments etc.)
-- [ ] Add option for remote Git Repositories
-- [ ] Add option for specific branch
-   
+- [x] Add option for remote Git Repositories
+- [x] Add option for specific branch
+- [ ] Implement incremental/diff-based packing
+- [ ] Add repository splitting for large codebases
+- [ ] Create advanced filtering options (by date, content)
+- [ ] Add repository analytics and metrics
+- [ ] Implement model-specific optimization profiles
+- [ ] Develop CI/CD integration options
+- [ ] Build interactive CLI mode
+
+## Ideas   
+
+
   
 ## Contributing  
   
