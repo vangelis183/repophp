@@ -189,7 +189,7 @@ Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed re
 - [x] Add option for specific branch
 - [x] Add repository splitting for large codebases
 - [x] Implement incremental/diff-based packing
-- [ ] Add editable custom config to override defaults
+- [x] Add editable custom config to override defaults
 - [ ] Add security checks for files (Keys, Passwords etc.)
 - [ ] Create advanced filtering options (by date, content)
 - [ ] Add repository analytics and metrics
