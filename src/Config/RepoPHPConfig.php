@@ -102,18 +102,18 @@ class RepoPHPConfig
 
         $binaryName = sprintf('%s-%s-%s', self::TOKEN_COUNTER_BINARY, $os, $arch);
 
-    // Add .exe extension for Windows
+        // Add .exe extension for Windows
         if ($os === 'windows') {
             $binaryName .= '.exe';
         }
 
-    // Check vendor/bin first
+        // Check vendor/bin first
         $vendorBinPath = dirname(__DIR__, 3) . '/bin/' . $binaryName;
         if (file_exists($vendorBinPath)) {
             return $vendorBinPath;
         }
 
-    // Check package bin directory
+        // Check package bin directory
         $packageBinPath = dirname(__DIR__, 2) . '/bin/' . $binaryName;
         if (file_exists($packageBinPath)) {
             return $packageBinPath;

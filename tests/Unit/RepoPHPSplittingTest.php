@@ -36,11 +36,11 @@ class RepoPHPSplittingTest extends TestCase
 
     private function setupTokenCounter(): void
     {
-    // Find the package's bin directory relative to the test file
+        // Find the package's bin directory relative to the test file
         $packageRoot = dirname(__DIR__, 2); // Go up from tests/Unit to package root
         $binDir = $packageRoot . '/bin';
 
-    // Determine OS and architecture (match the logic in RepoPHPConfig)
+        // Determine OS and architecture (match the logic in RepoPHPConfig)
         $os = strtolower(PHP_OS);
         if (strpos($os, 'darwin') !== false) {
             $os = 'mac';
@@ -59,17 +59,17 @@ class RepoPHPSplittingTest extends TestCase
             $arch = 'amd64'; // Default to amd64 if unsure
         }
 
-    // Construct binary name based on platform
+        // Construct binary name based on platform
         $binaryName = "token-counter-{$os}-{$arch}";
         if ($os === 'windows') {
             $binaryName .= '.exe';
         }
 
-    // Look for the platform-specific binary
+        // Look for the platform-specific binary
         $sourceTokenCounter = $binDir . '/' . $binaryName;
 
-    // Fall back to generic binaries if platform-specific isn't found
-        if (!file_exists($sourceTokenCounter)) {
+        // Fall back to generic binaries if platform-specific isn't found
+        if (! file_exists($sourceTokenCounter)) {
             $fallbackBinaries = [
             $binDir . '/token-counter',
             $binDir . '/token-counter.exe',
@@ -78,28 +78,28 @@ class RepoPHPSplittingTest extends TestCase
             foreach ($fallbackBinaries as $binary) {
                 if (file_exists($binary)) {
                     $sourceTokenCounter = $binary;
+
                     break;
                 }
             }
         }
 
-    // Skip if no token counter found in bin directory
-        if (!file_exists($sourceTokenCounter)) {
+        // Skip if no token counter found in bin directory
+        if (! file_exists($sourceTokenCounter)) {
             return; // Tests will run without tokenizer, may fail differently
         }
 
-    // Create temp directory for token counter
+        // Create temp directory for token counter
         $tempDir = sys_get_temp_dir() . '/repophp_token_counter_' . uniqid();
         mkdir($tempDir, 0777, true);
 
-    // Copy token counter to temp directory
+        // Copy token counter to temp directory
         $tempTokenCounter = $tempDir . '/' . basename($sourceTokenCounter);
         copy($sourceTokenCounter, $tempTokenCounter);
         chmod($tempTokenCounter, 0777); // Ensure it's executable by everyone
 
         $this->tokenCounterPath = $tempTokenCounter;
     }
-
 
     protected function tearDown(): void
     {
@@ -114,7 +114,7 @@ class RepoPHPSplittingTest extends TestCase
         $this->removeDirectory($this->testRepoPath);
         $this->removeDirectory(dirname($this->outputPath));
 
-         // Remove token counter directory if it exists
+        // Remove token counter directory if it exists
         if ($this->tokenCounterPath !== null) {
             $this->removeDirectory(dirname($this->tokenCounterPath));
         }
@@ -122,11 +122,11 @@ class RepoPHPSplittingTest extends TestCase
 
     private function createTestFiles(): void
     {
-         // Make sure directory is accessible
+        // Make sure directory is accessible
         $this->testRepoPath = realpath($this->testRepoPath);
         $this->testFiles = [];
 
-    // Make sure paths are correct and files are readable
+        // Make sure paths are correct and files are readable
         $smallFile = $this->testRepoPath . DIRECTORY_SEPARATOR . 'small.php';
         file_put_contents($smallFile, '<?php echo "Hello World"; ?>');
         chmod($smallFile, 0777);
@@ -165,7 +165,7 @@ class RepoPHPSplittingTest extends TestCase
 
     private function removeDirectory(string $dir): void
     {
-        if (!is_dir($dir)) {
+        if (! is_dir($dir)) {
             return;
         }
 
@@ -230,12 +230,12 @@ class RepoPHPSplittingTest extends TestCase
         );
 
 
-    // Verify the content contains the expected files in each output
+        // Verify the content contains the expected files in each output
         $this->assertStringContainsString('File: large.php', $firstFileContent, 'First file should contain large.php');
         $this->assertStringContainsString('File: medium.php', $secondFileContent, 'Second file should contain medium.php');
         $this->assertStringContainsString('File: small.php', $secondFileContent, 'Second file should contain small.php');
 
-    // Then check which file contains what
+        // Then check which file contains what
         if (strpos($firstFileContent, 'File: small.php') !== false) {
             $this->assertStringContainsString('File: small.php', $firstFileContent, 'First file should contain small.php');
         } else {
@@ -334,7 +334,7 @@ class RepoPHPSplittingTest extends TestCase
     // Add a test helper to skip tests if token counter isn't available
     private function skipIfNoTokenCounter(): void
     {
-        if ($this->tokenCounterPath === null || !file_exists($this->tokenCounterPath)) {
+        if ($this->tokenCounterPath === null || ! file_exists($this->tokenCounterPath)) {
             $this->markTestSkipped('No token counter available for testing');
         }
     }

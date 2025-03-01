@@ -80,7 +80,7 @@ class RepoPHP
 
             foreach ($files as $file) {
                 $relativePath = str_replace($this->repositoryPath . '/', '', $file);
-                
+
                 $fileTokens = $this->tokenCounter->countTokens($file, $this->config->getEncoding());
                 $relativePath = str_replace($this->repositoryPath . '/', '', $file);
                 // If adding this file would exceed the max tokens, start a new file
@@ -132,6 +132,7 @@ class RepoPHP
         }
 
         $pathInfo = pathinfo($basePath);
+
         return sprintf(
             '%s/%s-part%d.%s',
             $pathInfo['dirname'],
