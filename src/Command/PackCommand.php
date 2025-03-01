@@ -11,6 +11,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
+use Symfony\Component\Console\Question\ChoiceQuestion;
 use Vangelis\RepoPHP\Exceptions\GitRepositoryException;
 use Vangelis\RepoPHP\RepoPHP;
 use Vangelis\RepoPHP\Services\GitRepositoryService;
@@ -82,6 +83,18 @@ class PackCommand extends Command
                 InputOption::VALUE_REQUIRED,
                 'Maximum tokens per output file (splits into multiple files when exceeded)',
                 0 // 0 means no limit
+            )
+            ->addOption(
+                'incremental',
+                'inc',
+                InputOption::VALUE_NONE,
+                'Create an incremental diff based on changes since last pack'
+            )
+            ->addOption(
+                'base-file',
+                'base',
+                InputOption::VALUE_REQUIRED,
+                'The base file to compare against for incremental packing (required for incremental mode)'
             );
     }
 
@@ -91,6 +104,8 @@ class PackCommand extends Command
         $isRemote = $input->getOption('remote');
         $outputPath = $input->getArgument('output');
         $branch = $input->getOption('branch');
+        $incrementalMode = $input->getOption('incremental');
+        $baseFilePath = $input->getOption('base-file');
         $gitService = null;
         $tempDir = null;
         $repositoryPath = null;
@@ -113,28 +128,59 @@ class PackCommand extends Command
                 $repositoryPath = $repository;
             }
 
+            // Validate incremental mode requirements
+            if ($incrementalMode && !$baseFilePath) {
+                $output->writeln('<error>Base file is required for incremental packing. Use --base-file option.</error>');
+                return Command::FAILURE;
+            }
+
+            if ($incrementalMode && !file_exists($baseFilePath)) {
+                $output->writeln('<error>Base file does not exist: ' . $baseFilePath . '</error>');
+                return Command::FAILURE;
+            }
+
             // Check for output file overwrite
             if (file_exists($outputPath)) {
                 /** @var \Symfony\Component\Console\Helper\QuestionHelper $helper */
                 $helper = $this->getHelper('question');
-                $question = new ConfirmationQuestion(
-                    "File '$outputPath' already exists. Do you want to overwrite it? (y/N) ",
-                    false
-                );
 
-                if (! $helper->ask($input, $output, $question)) {
-                    // User chose not to overwrite, create a new filename with timestamp
-                    $pathInfo = pathinfo($outputPath);
-                    $newFilename = sprintf(
-                        '%s/%s_%s.%s',
-                        $pathInfo['dirname'],
-                        $pathInfo['filename'],
-                        date('Y-m-d_His'),
-                        $pathInfo['extension']
+                if ($incrementalMode) {
+                    // For incremental mode, ask if user wants to create a diff or override
+                    $question = new ChoiceQuestion(
+                        "File '$outputPath' already exists. What would you like to do?",
+                        ['diff' => 'Create a diff file', 'overwrite' => 'Overwrite existing file', 'cancel' => 'Cancel operation'],
+                        'diff'
                     );
 
-                    $output->writeln("<info>Creating file with new name: $newFilename</info>");
-                    $outputPath = $newFilename;
+                    $answer = $helper->ask($input, $output, $question);
+
+                    if ($answer === 'cancel') {
+                        $output->writeln('<info>Operation cancelled.</info>');
+                        return Command::SUCCESS;
+                    } elseif ($answer === 'diff') {
+                        // Already handled by the RepoPHP class
+                    }
+                } else {
+                    // Existing overwrite handling for non-incremental mode
+                    $question = new ConfirmationQuestion(
+                        "File '$outputPath' already exists. Do you want to overwrite it? (y/N) ",
+                        false
+                    );
+
+                    if (!$helper->ask($input, $output, $question)) {
+                        // User chose not to overwrite, create a new filename with timestamp
+                        $pathInfo = pathinfo($outputPath);
+                        $newFilename = sprintf(
+                            '%s/%s_%s.%s',
+                            $pathInfo['dirname'],
+                            $pathInfo['filename'],
+                            date('Y-m-d_His'),
+                            $pathInfo['extension']
+                        );
+
+                        $output->writeln("<info>Creating file with new name: $newFilename</info>");
+                        $outputPath = $newFilename;
+                    }
                 }
             }
 
@@ -148,12 +194,14 @@ class PackCommand extends Command
                 $input->getOption('encoding'),
                 $input->getOption('compress'),
                 null,
-                (int)$input->getOption('max-tokens')
+                (int)$input->getOption('max-tokens'),
+                $incrementalMode,
+                $baseFilePath
             );
 
             $repoPHP->pack();
 
-            $output->writeln('<info>Repository packed successfully.</info>');
+            $output->writeln('<info>' . ($incrementalMode ? 'Incremental diff' : 'Repository') . ' packed successfully.</info>');
 
             return Command::SUCCESS;
         } catch (Exception $e) {

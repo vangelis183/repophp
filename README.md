@@ -90,6 +90,13 @@ vendor/bin/repophp pack output.txt https://github.com/vangelis183/repophp.git --
 vendor/bin/repophp pack output.txt /path/to/repo --max-tokens=100000 --encoding cl100k_base
 ```
 
+**Incremental packing (diff mode):**
+
+```bash
+vendor/bin/repophp pack output.txt /path/to/repo --incremental --base-file=/path/to/previous/pack.txt
+```
+This will create a diff file containing only files that have changed since the previous pack, which is especially useful for large repositories where you only want to analyze recent changes.
+
 #### Breakdown:
 - Packs the repository located at `/path/to/repository` or clones the remote repository URL.
 - Stores the packed content in `/path/to/output.txt`.
@@ -145,7 +152,7 @@ Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed re
 - [x] Add option for remote Git Repositories
 - [x] Add option for specific branch
 - [x] Add repository splitting for large codebases
-- [ ] Implement incremental/diff-based packing
+- [x] Implement incremental/diff-based packing
 - [ ] Add editable custom config to override defaults
 - [ ] Add security checks for files (Keys, Passwords etc.)
 - [ ] Create advanced filtering options (by date, content)

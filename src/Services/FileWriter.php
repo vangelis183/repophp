@@ -24,6 +24,8 @@ class FileWriter
 
     private array $binaryFiles = [];
 
+    private array $incrementalInfo = [];
+
     private readonly ?OutputInterface $output;
 
     private readonly string $outputPath;
@@ -196,6 +198,15 @@ class FileWriter
                 }
             }
 
+            // Add incremental info if available
+            if (!empty($this->incrementalInfo)) {
+                $this->output->writeln("\n📝 Incremental Pack Information:");
+                $this->output->writeln("─────────────────────────────────");
+                $this->output->writeln(sprintf("   Base File: %s", $this->incrementalInfo['baseFile']));
+                $this->output->writeln(sprintf("   Base Commit: %s", $this->incrementalInfo['baseCommit'] ?? 'Unknown'));
+                $this->output->writeln(sprintf("   Changed Files: %d", $this->incrementalInfo['changedFiles']));
+            }
+
             $this->output->writeln('');
         }
     }
@@ -218,5 +229,10 @@ class FileWriter
         $this->fileStats = [];
         $this->binaryFiles = [];
         $this->unreadableFiles = [];
+    }
+
+    public function setIncrementalInfo(array $info): void
+    {
+        $this->incrementalInfo = $info;
     }
 }

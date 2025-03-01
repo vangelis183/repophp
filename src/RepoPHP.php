@@ -14,6 +14,7 @@ use Vangelis\RepoPHP\Services\FileCollector;
 use Vangelis\RepoPHP\Services\FileWriter;
 use Vangelis\RepoPHP\Services\FormatValidator;
 use Vangelis\RepoPHP\Services\PathValidator;
+use Vangelis\RepoPHP\Services\GitDiffService;
 
 class RepoPHP
 {
@@ -27,6 +28,9 @@ class RepoPHP
     private readonly PathValidator $pathValidator;
     private readonly TokenCounter $tokenCounter;
     private readonly ?OutputInterface $output;
+    private bool $incrementalMode = false;
+    private ?string $baseFilePath = null;
+    private ?GitDiffService $gitDiffService = null;
 
     public function __construct(
         string $repositoryPath,
@@ -38,7 +42,9 @@ class RepoPHP
         string $encoding = RepoPHPConfig::ENCODING_CL100K,
         bool $compress = false,
         ?string $tokenCounterPath = null,
-        int $maxTokensPerFile = 0
+        int $maxTokensPerFile = 0,
+        bool $incrementalMode = false,
+        ?string $baseFilePath = null
     ) {
         $this->output = $output;
         $this->pathValidator = new PathValidator();
@@ -62,15 +68,41 @@ class RepoPHP
             $this->repositoryPath
         );
         $this->fileCollector = new FileCollector(new Finder(), $this->config->getExcludePatterns(), $this->config->getRespectGitignore(), $this->repositoryPath);
+
+        $this->incrementalMode = $incrementalMode;
+        $this->baseFilePath = $baseFilePath;
+
+        if ($incrementalMode) {
+            $this->gitDiffService = new GitDiffService($repositoryPath);
+        }
     }
 
     public function pack(): void
     {
-        $files = $this->fileCollector->collectFiles();
+        if ($this->incrementalMode && !$this->baseFilePath) {
+            throw new \InvalidArgumentException('Base file is required for incremental packing');
+        }
+
+        $files = $this->incrementalMode
+            ? $this->getChangedFiles()
+            : $this->fileCollector->collectFiles();
+
         $fileIndex = 0;
         $currentTokens = 0;
         $maxTokens = $this->config->getMaxTokensPerFile();
         $outputBasePath = $this->outputPath;
+
+        if ($this->incrementalMode) {
+            $pathInfo = pathinfo($outputBasePath);
+            $outputBasePath = sprintf(
+                '%s/%s_diff_%s.%s',
+                $pathInfo['dirname'],
+                $pathInfo['filename'],
+                date('Y-m-d_His'),
+                $pathInfo['extension'] ?? 'txt'
+            );
+        }
+
         $this->outputPath = $this->getOutputFilePath($outputBasePath, $fileIndex);
         $outputHandle = $this->openOutputFile();
         $processedFiles = 0;
@@ -83,13 +115,10 @@ class RepoPHP
 
                 $fileTokens = $this->tokenCounter->countTokens($file, $this->config->getEncoding());
                 $relativePath = str_replace($this->repositoryPath . '/', '', $file);
-                // If adding this file would exceed the max tokens, start a new file
-                // But only if max tokens is set and we've processed at least one file
                 if ($maxTokens > 0 && $processedFiles > 0 && ($currentTokens + $fileTokens) > $maxTokens) {
                     $this->fileWriter->writeFooter($outputHandle);
                     fclose($outputHandle);
 
-                    // Start a new file
                     $fileIndex++;
                     $this->outputPath = $this->getOutputFilePath($outputBasePath, $fileIndex);
                     $outputHandle = $this->openOutputFile();
@@ -106,9 +135,19 @@ class RepoPHP
                 $processedFiles++;
             }
 
+            if ($this->incrementalMode) {
+                $this->fileWriter->setIncrementalInfo([
+                    'baseFile' => $this->baseFilePath,
+                    'baseCommit' => $this->gitDiffService->getLastPackCommit($this->baseFilePath),
+                    'changedFiles' => count($files),
+                ]);
+            }
+
             $this->fileWriter->writeFooter($outputHandle);
         } finally {
-            fclose($outputHandle);
+            if (is_resource($outputHandle)) {
+                fclose($outputHandle);
+            }
         }
         if ($this->output && $fileIndex > 0) {
             $this->output->writeln("\n🔄 Repository was split into " . ($fileIndex + 1) . " files due to token limit");
@@ -140,5 +179,29 @@ class RepoPHP
             $index + 1,
             $pathInfo['extension']
         );
+    }
+
+    private function getChangedFiles(): array
+    {
+        if (!$this->gitDiffService) {
+            return [];
+        }
+
+        $baseCommit = $this->gitDiffService->getLastPackCommit($this->baseFilePath);
+        if (!$baseCommit) {
+            throw new \RuntimeException('Could not determine base commit from the base file');
+        }
+
+        $changedFilePaths = $this->gitDiffService->getChangedFilesSinceCommit($baseCommit);
+
+        $fullPathFiles = [];
+        foreach ($changedFilePaths as $relativePath) {
+            $fullPath = $this->repositoryPath . '/' . $relativePath;
+            if (file_exists($fullPath) && is_file($fullPath)) {
+                $fullPathFiles[] = $fullPath;
+            }
+        }
+
+        return $fullPathFiles;
     }
 }
