@@ -69,7 +69,7 @@ class FileWriter
             $header .= $gitInfo;
         }
 
-        fwrite($outputHandle, $header.$formatter->getSeparator());
+        fwrite($outputHandle, $header . $formatter->getSeparator());
     }
 
     /**
@@ -173,7 +173,7 @@ class FileWriter
                     foreach ($gitInfo['remotes'] as $name => $urls) {
                         $remoteInfo[] = sprintf("%s (%s)", $name, $urls['fetch']);
                     }
-                    $this->output->writeln("     Remotes: ".implode(', ', $remoteInfo));
+                    $this->output->writeln("     Remotes: " . implode(', ', $remoteInfo));
                 }
             }
 
@@ -208,5 +208,15 @@ class FileWriter
         }
 
         return $content;
+    }
+
+    public function resetStats(): void
+    {
+        $this->totalChars = 0;
+        $this->totalTokens = 0;
+        $this->totalFiles = 0;
+        $this->fileStats = [];
+        $this->binaryFiles = [];
+        $this->unreadableFiles = [];
     }
 }

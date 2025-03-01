@@ -18,17 +18,17 @@ class RepoPHPTest extends TestCase
     protected function setUp(): void
     {
         $this->output = new BufferedOutput();
-        $this->repositoryRoot = sys_get_temp_dir().'/repophp-test-'.uniqid();
-        $this->outputPath = sys_get_temp_dir().'/repophp-output-'.uniqid().'.txt';
+        $this->repositoryRoot = sys_get_temp_dir() . '/repophp-test-' . uniqid();
+        $this->outputPath = sys_get_temp_dir() . '/repophp-output-' . uniqid() . '.txt';
 
         mkdir($this->repositoryRoot, 0777, true);
-        file_put_contents($this->repositoryRoot.'/test.php', '<?php echo "Hello World"; ?>');
-        file_put_contents($this->repositoryRoot.'/.gitignore', 'ignored.php');
-        file_put_contents($this->repositoryRoot.'/ignored.php', '<?php echo "Ignored file"; ?>');
+        file_put_contents($this->repositoryRoot . '/test.php', '<?php echo "Hello World"; ?>');
+        file_put_contents($this->repositoryRoot . '/.gitignore', 'ignored.php');
+        file_put_contents($this->repositoryRoot . '/ignored.php', '<?php echo "Ignored file"; ?>');
 
         // Create mock token counter binary
-        $this->tokenCounterPath = sys_get_temp_dir().'/mock-token-counter-'.uniqid();
-        file_put_contents($this->tokenCounterPath, '#!/bin/bash'.PHP_EOL.'echo "42"');
+        $this->tokenCounterPath = sys_get_temp_dir() . '/mock-token-counter-' . uniqid();
+        file_put_contents($this->tokenCounterPath, '#!/bin/bash' . PHP_EOL . 'echo "42"');
         chmod($this->tokenCounterPath, 0755);
     }
 
@@ -48,16 +48,16 @@ class RepoPHPTest extends TestCase
             unlink($this->outputPath);
         }
 
-        if (file_exists($this->repositoryRoot.'/test.php')) {
-            unlink($this->repositoryRoot.'/test.php');
+        if (file_exists($this->repositoryRoot . '/test.php')) {
+            unlink($this->repositoryRoot . '/test.php');
         }
 
-        if (file_exists($this->repositoryRoot.'/.gitignore')) {
-            unlink($this->repositoryRoot.'/.gitignore');
+        if (file_exists($this->repositoryRoot . '/.gitignore')) {
+            unlink($this->repositoryRoot . '/.gitignore');
         }
 
-        if (file_exists($this->repositoryRoot.'/ignored.php')) {
-            unlink($this->repositoryRoot.'/ignored.php');
+        if (file_exists($this->repositoryRoot . '/ignored.php')) {
+            unlink($this->repositoryRoot . '/ignored.php');
         }
 
         if (is_dir($this->repositoryRoot)) {
@@ -69,7 +69,7 @@ class RepoPHPTest extends TestCase
     {
         $files = array_diff(scandir($path), ['.', '..']);
         foreach ($files as $file) {
-            $filePath = $path.'/'.$file;
+            $filePath = $path . '/' . $file;
             if (is_dir($filePath)) {
                 $this->removeDirectory($filePath);
             } else {
@@ -118,17 +118,17 @@ class RepoPHPTest extends TestCase
     public function testPackWithGitignoreRespect(): void
     {
         // Initialize Git repository
-        exec('git -C '.escapeshellarg($this->repositoryRoot).' init');
-        exec('git -C '.escapeshellarg($this->repositoryRoot).' config user.email "test@example.com"');
-        exec('git -C '.escapeshellarg($this->repositoryRoot).' config user.name "Test User"');
+        exec('git -C ' . escapeshellarg($this->repositoryRoot) . ' init');
+        exec('git -C ' . escapeshellarg($this->repositoryRoot) . ' config user.email "test@example.com"');
+        exec('git -C ' . escapeshellarg($this->repositoryRoot) . ' config user.name "Test User"');
 
         // Add and commit .gitignore first
-        exec('git -C '.escapeshellarg($this->repositoryRoot).' add .gitignore');
-        exec('git -C '.escapeshellarg($this->repositoryRoot).' commit -m "Add gitignore"');
+        exec('git -C ' . escapeshellarg($this->repositoryRoot) . ' add .gitignore');
+        exec('git -C ' . escapeshellarg($this->repositoryRoot) . ' commit -m "Add gitignore"');
 
         // Add remaining files
-        exec('git -C '.escapeshellarg($this->repositoryRoot).' add .');
-        exec('git -C '.escapeshellarg($this->repositoryRoot).' commit -m "Add files"');
+        exec('git -C ' . escapeshellarg($this->repositoryRoot) . ' add .');
+        exec('git -C ' . escapeshellarg($this->repositoryRoot) . ' commit -m "Add files"');
 
         $repoPHP = new RepoPHP(
             $this->repositoryRoot,

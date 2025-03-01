@@ -42,13 +42,16 @@ class RepoPHPConfig
 
     private bool $compress;
 
+    private int $maxTokensPerFile;
+
     public function __construct(
         string $format = self::FORMAT_PLAIN,
         array $excludePatterns = [],
         bool $respectGitignore = true,
         ?string $tokenCounterPath = null,
         string $encoding = self::ENCODING_CL100K,
-        bool $compress = false
+        bool $compress = false,
+        int $maxTokensPerFile = 0
     ) {
         $this->format = $format;
         $this->excludePatterns = array_merge(self::getDefaultExcludePatterns(), $excludePatterns);
@@ -59,6 +62,12 @@ class RepoPHPConfig
             throw new TokenCounterException('Token counter binary not found');
         }
         $this->compress = $compress;
+        $this->maxTokensPerFile = $maxTokensPerFile;
+    }
+
+    public function getMaxTokensPerFile(): int
+    {
+        return $this->maxTokensPerFile;
     }
 
     public function shouldCompress(): bool
@@ -73,19 +82,47 @@ class RepoPHPConfig
 
     private function findTokenCounterBinary(): string
     {
+        $os = strtolower(PHP_OS);
+        if (strpos($os, 'darwin') !== false) {
+            $os = 'mac';
+        } elseif (strpos($os, 'win') !== false) {
+            $os = 'windows';
+        } else {
+            $os = 'linux';
+        }
+
+        $arch = php_uname('m');
+        if ($arch === 'x86_64' || $arch === 'amd64') {
+            $arch = 'amd64';
+        } elseif (strpos($arch, 'arm') !== false || strpos($arch, 'aarch64') !== false) {
+            $arch = 'arm64';
+        } else {
+            $arch = 'amd64'; // Default to amd64 if unsure
+        }
+
+        $binaryName = sprintf('%s-%s-%s', self::TOKEN_COUNTER_BINARY, $os, $arch);
+
+        // Add .exe extension for Windows
+        if ($os === 'windows') {
+            $binaryName .= '.exe';
+        }
+
         // Check vendor/bin first
-        $vendorBinPath = dirname(__DIR__, 3) . '/bin/' . self::TOKEN_COUNTER_BINARY;
+        $vendorBinPath = dirname(__DIR__, 3) . '/bin/' . $binaryName;
         if (file_exists($vendorBinPath)) {
             return $vendorBinPath;
         }
 
         // Check package bin directory
-        $packageBinPath = dirname(__DIR__, 2) . '/bin/' . self::TOKEN_COUNTER_BINARY;
+        $packageBinPath = dirname(__DIR__, 2) . '/bin/' . $binaryName;
         if (file_exists($packageBinPath)) {
             return $packageBinPath;
         }
 
-        throw new TokenCounterException('Token counter binary not found');
+        throw new TokenCounterException(
+            "Token counter binary not found for your system ($os-$arch). " .
+            "Expected binary name: $binaryName"
+        );
     }
 
     public function getTokenCounterPath(): string
