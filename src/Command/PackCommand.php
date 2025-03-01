@@ -10,8 +10,8 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Question\ChoiceQuestion;
+use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Vangelis\RepoPHP\Exceptions\GitRepositoryException;
 use Vangelis\RepoPHP\RepoPHP;
 use Vangelis\RepoPHP\Services\GitRepositoryService;
@@ -129,13 +129,15 @@ class PackCommand extends Command
             }
 
             // Validate incremental mode requirements
-            if ($incrementalMode && !$baseFilePath) {
+            if ($incrementalMode && ! $baseFilePath) {
                 $output->writeln('<error>Base file is required for incremental packing. Use --base-file option.</error>');
+
                 return Command::FAILURE;
             }
 
-            if ($incrementalMode && !file_exists($baseFilePath)) {
+            if ($incrementalMode && ! file_exists($baseFilePath)) {
                 $output->writeln('<error>Base file does not exist: ' . $baseFilePath . '</error>');
+
                 return Command::FAILURE;
             }
 
@@ -156,6 +158,7 @@ class PackCommand extends Command
 
                     if ($answer === 'cancel') {
                         $output->writeln('<info>Operation cancelled.</info>');
+
                         return Command::SUCCESS;
                     } elseif ($answer === 'diff') {
                         // Already handled by the RepoPHP class
@@ -167,7 +170,7 @@ class PackCommand extends Command
                         false
                     );
 
-                    if (!$helper->ask($input, $output, $question)) {
+                    if (! $helper->ask($input, $output, $question)) {
                         // User chose not to overwrite, create a new filename with timestamp
                         $pathInfo = pathinfo($outputPath);
                         $newFilename = sprintf(

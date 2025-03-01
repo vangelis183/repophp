@@ -199,7 +199,7 @@ class FileWriter
             }
 
             // Add incremental info if available
-            if (!empty($this->incrementalInfo)) {
+            if (! empty($this->incrementalInfo)) {
                 $this->output->writeln("\n📝 Incremental Pack Information:");
                 $this->output->writeln("─────────────────────────────────");
                 $this->output->writeln(sprintf("   Base File: %s", $this->incrementalInfo['baseFile']));

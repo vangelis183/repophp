@@ -13,8 +13,8 @@ use Vangelis\RepoPHP\Factory\FormatterFactory;
 use Vangelis\RepoPHP\Services\FileCollector;
 use Vangelis\RepoPHP\Services\FileWriter;
 use Vangelis\RepoPHP\Services\FormatValidator;
-use Vangelis\RepoPHP\Services\PathValidator;
 use Vangelis\RepoPHP\Services\GitDiffService;
+use Vangelis\RepoPHP\Services\PathValidator;
 
 class RepoPHP
 {
@@ -79,7 +79,7 @@ class RepoPHP
 
     public function pack(): void
     {
-        if ($this->incrementalMode && !$this->baseFilePath) {
+        if ($this->incrementalMode && ! $this->baseFilePath) {
             throw new \InvalidArgumentException('Base file is required for incremental packing');
         }
 
@@ -183,12 +183,12 @@ class RepoPHP
 
     private function getChangedFiles(): array
     {
-        if (!$this->gitDiffService) {
+        if (! $this->gitDiffService) {
             return [];
         }
 
         $baseCommit = $this->gitDiffService->getLastPackCommit($this->baseFilePath);
-        if (!$baseCommit) {
+        if (! $baseCommit) {
             throw new \RuntimeException('Could not determine base commit from the base file');
         }
 

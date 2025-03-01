@@ -49,7 +49,7 @@ class GitDiffService
      */
     public function getLastPackCommit(string $baseFilePath): ?string
     {
-        if (!file_exists($baseFilePath)) {
+        if (! file_exists($baseFilePath)) {
             return null;
         }
 
@@ -73,11 +73,11 @@ class GitDiffService
      */
     private function validateGitRepository(): void
     {
-        if (!$this->repositoryPath || !is_dir($this->repositoryPath)) {
+        if (! $this->repositoryPath || ! is_dir($this->repositoryPath)) {
             throw new GitRepositoryException('Repository path is not valid');
         }
 
-        if (!is_dir($this->repositoryPath . '/.git')) {
+        if (! is_dir($this->repositoryPath . '/.git')) {
             throw new GitRepositoryException('Not a git repository');
         }
     }
