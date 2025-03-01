@@ -145,7 +145,7 @@ class FileWriter
             $this->output->writeln(sprintf("       Output: %s", basename($this->outputPath)));
 
             // Sort files by tokens count
-            usort($this->fileStats, fn($a, $b) => $b['tokens'] <=> $a['tokens']);
+            usort($this->fileStats, fn ($a, $b) => $b['tokens'] <=> $a['tokens']);
             $top5 = array_slice($this->fileStats, 0, 5);
 
             $this->output->writeln("\n📈 Top 5 Files by Character Count and Token Count:");
@@ -209,6 +209,7 @@ class FileWriter
 
         return $content;
     }
+
     public function resetStats(): void
     {
         $this->totalChars = 0;
