@@ -13,6 +13,42 @@ You can install the package via composer:
 ```bash  
 composer require vangelis/repophp --dev
 ```  
+
+## Configuration File
+
+RepoPHP supports a configuration file to set default options. Create one of these files in your project directory:
+- `.repophp.json`
+- `repophp.json`
+- `.repophp.config.json`
+- `repophp.config.json`
+
+Example configuration file:
+
+```json
+{
+  "repository": "/path/to/repository",
+  "output": "packed_repo.txt",
+  "format": "markdown",
+  "encoding": "cl100k_base",
+  "exclude": [".env.local", "*.log"],
+  "no-gitignore": false,
+  "compress": true,
+  "max-tokens": 100000,
+  "remote": false,
+  "branch": "main",
+  "incremental": false,
+  "base-file": null
+}
+```
+
+With this configuration file in place, you can simply run:
+
+```bash
+vendor/bin/repophp pack
+```
+
+Command-line arguments will override settings from the configuration file.
+
   
 ## Usage  
 ## Pack Command Usage  
