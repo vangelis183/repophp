@@ -12,6 +12,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
+use Vangelis\RepoPHP\Config\ConfigLoader;
 use Vangelis\RepoPHP\Exceptions\GitRepositoryException;
 use Vangelis\RepoPHP\RepoPHP;
 use Vangelis\RepoPHP\Services\GitRepositoryService;
@@ -100,12 +101,43 @@ class PackCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $repository = $input->getArgument('repository');
-        $isRemote = $input->getOption('remote');
-        $outputPath = $input->getArgument('output');
-        $branch = $input->getOption('branch');
-        $incrementalMode = $input->getOption('incremental');
-        $baseFilePath = $input->getOption('base-file');
+        // Load configuration from file if exists
+        try {
+            $fileConfig = ConfigLoader::loadConfig();
+            if (!empty($fileConfig)) {
+                $output->writeln('<info>Using configuration from file</info>');
+            }
+        } catch (\InvalidArgumentException $e) {
+            $output->writeln('<error>' . $e->getMessage() . '</error>');
+            return Command::FAILURE;
+        }
+
+        // Get repository argument or from config file
+        $repository = $input->getArgument('repository') ?? $fileConfig['repository'] ?? null;
+        if (!$repository) {
+            $output->writeln('<error>Repository path is required</error>');
+            return Command::FAILURE;
+        }
+
+        // Apply config file defaults but let CLI options override them
+        $isRemote = $input->getOption('remote') ?? $fileConfig['remote'] ?? false;
+        $outputPath = $input->getArgument('output') ?? $fileConfig['output'] ?? null;
+        if (!$outputPath) {
+            $output->writeln('<error>Output path is required</error>');
+            return Command::FAILURE;
+        }
+
+        $branch = $input->getOption('branch') ?? $fileConfig['branch'] ?? 'main';
+        $format = $input->getOption('format') ?? $fileConfig['format'] ?? 'plain';
+        $encoding = $input->getOption('encoding') ?? $fileConfig['encoding'] ?? 'p50k_base';
+        $excludePatterns = $input->getOption('exclude') ?: ($fileConfig['exclude'] ?? []);
+        $respectGitignore = !($input->getOption('no-gitignore') ?? $fileConfig['no-gitignore'] ?? false);
+        $compress = $input->getOption('compress') ?? $fileConfig['compress'] ?? false;
+        $maxTokens = (int)($input->getOption('max-tokens') ?? $fileConfig['max-tokens'] ?? 0);
+        $incrementalMode = $input->getOption('incremental') ?? $fileConfig['incremental'] ?? false;
+        $baseFilePath = $input->getOption('base-file') ?? $fileConfig['base-file'] ?? null;
+
+        // Continue with the existing execution logic from here, using the merged configs
         $gitService = null;
         $tempDir = null;
         $repositoryPath = null;
@@ -190,14 +222,14 @@ class PackCommand extends Command
             $repoPHP = new RepoPHP(
                 $repositoryPath,
                 $outputPath,
-                $input->getOption('format'),
-                $input->getOption('exclude'),
-                ! $input->getOption('no-gitignore'),
+                $format,
+                $excludePatterns,
+                $respectGitignore,
                 $output,
-                $input->getOption('encoding'),
-                $input->getOption('compress'),
+                $encoding,
+                $compress,
                 null,
-                (int)$input->getOption('max-tokens'),
+                $maxTokens,
                 $incrementalMode,
                 $baseFilePath
             );
