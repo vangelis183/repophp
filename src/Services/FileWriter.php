@@ -69,7 +69,7 @@ class FileWriter
             $header .= $gitInfo;
         }
 
-        fwrite($outputHandle, $header.$formatter->getSeparator());
+        fwrite($outputHandle, $header . $formatter->getSeparator());
     }
 
     /**
@@ -145,7 +145,7 @@ class FileWriter
             $this->output->writeln(sprintf("       Output: %s", basename($this->outputPath)));
 
             // Sort files by tokens count
-            usort($this->fileStats, fn ($a, $b) => $b['tokens'] <=> $a['tokens']);
+            usort($this->fileStats, fn($a, $b) => $b['tokens'] <=> $a['tokens']);
             $top5 = array_slice($this->fileStats, 0, 5);
 
             $this->output->writeln("\n📈 Top 5 Files by Character Count and Token Count:");
@@ -173,7 +173,7 @@ class FileWriter
                     foreach ($gitInfo['remotes'] as $name => $urls) {
                         $remoteInfo[] = sprintf("%s (%s)", $name, $urls['fetch']);
                     }
-                    $this->output->writeln("     Remotes: ".implode(', ', $remoteInfo));
+                    $this->output->writeln("     Remotes: " . implode(', ', $remoteInfo));
                 }
             }
 
@@ -208,5 +208,14 @@ class FileWriter
         }
 
         return $content;
+    }
+    public function resetStats(): void
+    {
+        $this->totalChars = 0;
+        $this->totalTokens = 0;
+        $this->totalFiles = 0;
+        $this->fileStats = [];
+        $this->binaryFiles = [];
+        $this->unreadableFiles = [];
     }
 }

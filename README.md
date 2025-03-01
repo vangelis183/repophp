@@ -49,6 +49,9 @@ Additional file patterns to exclude during the packing process.
 These patterns are added to the default exclusions (e.g., .env, composer.lock, etc.).
 This option can be used multiple times to add multiple patterns.
 
+- **--max-tokens <number>, -max <number> (default: 0):**
+Maximum number of tokens per output file. If set to a positive number, the repository will be split into multiple files when the token limit is reached. Set to 0 (default) for no limit.
+
 - **--no-gitignore, -nog:**
 If this flag is provided, .gitignore files will not be used to exclude files.
 
@@ -81,6 +84,11 @@ vendor/bin/repophp pack output.txt /path/to/repo -fmt json -com -enc cl100k_base
 vendor/bin/repophp pack output.txt https://github.com/vangelis183/repophp.git --remote --branch main --compress --encoding cl100k_base --format plain
 ```
 
+**Split large repository by token count:**
+
+```bash
+vendor/bin/repophp pack output.txt /path/to/repo --max-tokens=100000 --encoding cl100k_base
+```
 
 #### Breakdown:
 - Packs the repository located at `/path/to/repository` or clones the remote repository URL.
@@ -136,8 +144,10 @@ Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed re
 - [x] Add compression (Comments etc.)
 - [x] Add option for remote Git Repositories
 - [x] Add option for specific branch
+- [x] Add repository splitting for large codebases
 - [ ] Implement incremental/diff-based packing
-- [ ] Add repository splitting for large codebases
+- [ ] Add editable custom config to override defaults
+- [ ] Add security checks for files (Keys, Passwords etc.)
 - [ ] Create advanced filtering options (by date, content)
 - [ ] Add repository analytics and metrics
 - [ ] Implement model-specific optimization profiles

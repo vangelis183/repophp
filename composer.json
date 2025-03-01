@@ -15,7 +15,11 @@
     ],
     "bin": [
         "bin/repophp",
-        "bin/token-counter"
+        "bin/token-counter-linux-amd64",
+        "bin/token-counter-linux-arm64",
+        "bin/token-counter-mac-amd64",
+        "bin/token-counter-mac-arm64",
+        "bin/token-counter-windows-amd64.exe"
     ],
     "require": {
         "php": "^8.3",

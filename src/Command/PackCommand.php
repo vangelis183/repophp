@@ -75,6 +75,13 @@ class PackCommand extends Command
                 'com',
                 InputOption::VALUE_NONE,
                 'Remove comments and empty lines from files'
+            )
+            ->addOption(
+                'max-tokens',
+                'mxt',
+                InputOption::VALUE_REQUIRED,
+                'Maximum tokens per output file (splits into multiple files when exceeded)',
+                0 // 0 means no limit
             );
     }
 
@@ -139,7 +146,9 @@ class PackCommand extends Command
                 ! $input->getOption('no-gitignore'),
                 $output,
                 $input->getOption('encoding'),
-                $input->getOption('compress')
+                $input->getOption('compress'),
+                null,
+                (int)$input->getOption('max-tokens')
             );
 
             $repoPHP->pack();
