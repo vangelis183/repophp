@@ -10,7 +10,7 @@ class ConfigLoader
         '.repophp.json',
         'repophp.json',
         '.repophp.config.json',
-        'repophp.config.json'
+        'repophp.config.json',
     ];
 
     /**
@@ -19,7 +19,7 @@ class ConfigLoader
     public static function loadConfig(): array
     {
         $configPath = self::findConfigFile();
-        if (!$configPath) {
+        if (! $configPath) {
             return [];
         }
 

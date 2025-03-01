@@ -104,26 +104,29 @@ class PackCommand extends Command
         // Load configuration from file if exists
         try {
             $fileConfig = ConfigLoader::loadConfig();
-            if (!empty($fileConfig)) {
+            if (! empty($fileConfig)) {
                 $output->writeln('<info>Using configuration from file</info>');
             }
         } catch (\InvalidArgumentException $e) {
             $output->writeln('<error>' . $e->getMessage() . '</error>');
+
             return Command::FAILURE;
         }
 
         // Get repository argument or from config file
         $repository = $input->getArgument('repository') ?? $fileConfig['repository'] ?? null;
-        if (!$repository) {
+        if (! $repository) {
             $output->writeln('<error>Repository path is required</error>');
+
             return Command::FAILURE;
         }
 
         // Apply config file defaults but let CLI options override them
         $isRemote = $input->getOption('remote') ?? $fileConfig['remote'] ?? false;
         $outputPath = $input->getArgument('output') ?? $fileConfig['output'] ?? null;
-        if (!$outputPath) {
+        if (! $outputPath) {
             $output->writeln('<error>Output path is required</error>');
+
             return Command::FAILURE;
         }
 
@@ -131,7 +134,7 @@ class PackCommand extends Command
         $format = $input->getOption('format') ?? $fileConfig['format'] ?? 'plain';
         $encoding = $input->getOption('encoding') ?? $fileConfig['encoding'] ?? 'p50k_base';
         $excludePatterns = $input->getOption('exclude') ?: ($fileConfig['exclude'] ?? []);
-        $respectGitignore = !($input->getOption('no-gitignore') ?? $fileConfig['no-gitignore'] ?? false);
+        $respectGitignore = ! ($input->getOption('no-gitignore') ?? $fileConfig['no-gitignore'] ?? false);
         $compress = $input->getOption('compress') ?? $fileConfig['compress'] ?? false;
         $maxTokens = (int)($input->getOption('max-tokens') ?? $fileConfig['max-tokens'] ?? 0);
         $incrementalMode = $input->getOption('incremental') ?? $fileConfig['incremental'] ?? false;

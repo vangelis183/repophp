@@ -31,7 +31,7 @@ class ConfigLoaderTest extends TestCase
         $config = [
             'repository' => '/path/to/repo',
             'format' => 'markdown',
-            'encoding' => 'cl100k_base'
+            'encoding' => 'cl100k_base',
         ];
 
         file_put_contents($this->tempDir . '/.repophp.json', json_encode($config));
