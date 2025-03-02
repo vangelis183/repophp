@@ -1,8 +1,6 @@
 # RepoPHP
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/vangelis/repophp.svg?style=flat-square)](https://packagist.org/packages/vangelis/repophp)  
-[![Tests](https://img.shields.io/github/actions/workflow/status/vangelis183/repophp/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/vangelis183/repophp/actions/workflows/run-tests.yml)  
-[![Total Downloads](https://img.shields.io/packagist/dt/vangelis/repophp.svg?style=flat-square)](https://packagist.org/packages/vangelis/repophp)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/vangelis/repophp.svg?style=flat-square)](https://packagist.org/packages/vangelis/repophp) [![Tests](https://img.shields.io/github/actions/workflow/status/vangelis183/repophp/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/vangelis183/repophp/actions/workflows/run-tests.yml) [![Total Downloads](https://img.shields.io/packagist/dt/vangelis/repophp.svg?style=flat-square)](https://packagist.org/packages/vangelis/repophp)
 
 RepoPHP is a PHP package that packs a repository into a single AI-friendly file for LLM processing. Similar to [repomix](https://github.com/yamadashy/repomix)
 
