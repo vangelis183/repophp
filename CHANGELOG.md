@@ -3,7 +3,9 @@
 All notable changes to `RepoPHP` will be documented in this file.
 
 ### [0.7.0] - 2025-03-10
+
 #### Added
+
 - Implemented incremental/diff-based packing with new --incremental flag
 - Added repository splitting for large codebases with --split option
 - Created advanced filtering options:
@@ -14,6 +16,7 @@ All notable changes to `RepoPHP` will be documented in this file.
 - Implemented model-specific optimization profiles (--model option)
 
 #### Changed
+
 - Improved memory usage for large repositories
 - Enhanced file collection algorithm for better performance
 - Updated configuration handling for new filtering options
@@ -21,6 +24,7 @@ All notable changes to `RepoPHP` will be documented in this file.
 - Improved handling of large binary files
 
 #### Fixed
+
 - Resolved memory issues when processing repositories over 1GB
 - Fixed path normalization on different operating systems
 - Corrected handling of symlinks in repository structure
@@ -28,6 +32,7 @@ All notable changes to `RepoPHP` will be documented in this file.
 - Fixed encoding detection for non-UTF8 files
 
 #### Technical
+
 - Added comprehensive test suite for incremental packing
 - Created benchmarking tools for performance testing
 - Improved documentation with examples for new features
@@ -39,15 +44,21 @@ All notable changes to `RepoPHP` will be documented in this file.
 #### Added
 
 - New `CommentStripper` service for code compression
+  
 - Added `--compress` flag to `pack` command
+  
 - Support for stripping:
+  
   - Single-line comments (`//` and `#`)
   - Multi-line comments (`/* */`)
   - PHPDoc blocks (`/** */`)
   
 - Preserve comments in heredoc and nowdoc strings
+  
 - Maintain code indentation after comment removal
+  
 - File size optimization through comment removal
+  
 
 #### Changed
 
@@ -72,20 +83,38 @@ All notable changes to `RepoPHP` will be documented in this file.
 
 **Full Changelog**: https://github.com/vangelis183/repophp/compare/0.5.0...0.6.0
 
+## 0.7.2 - 2025-03-03
+
+### What's Changed
+
+* Update phpunit/phpunit requirement from ^11.5 to ^12.0 by @dependabot in https://github.com/vangelis183/repophp/pull/13
+
+### New Contributors
+
+* @dependabot made their first contribution in https://github.com/vangelis183/repophp/pull/13
+
+**Full Changelog**: https://github.com/vangelis183/repophp/compare/0.7.1...0.7.2
+
 ## [0.6.0] - 2025-02-27
 
 ### Added
 
 - New `CommentStripper` service for code compression
+  
 - Added `--compress` flag to `pack` command
+  
 - Support for stripping:
+  
   - Single-line comments (`//` and `#`)
   - Multi-line comments (`/* */`)
   - PHPDoc blocks (`/** */`)
   
 - Preserve comments in heredoc and nowdoc strings
+  
 - Maintain code indentation after comment removal
+  
 - File size optimization through comment removal
+  
 
 ### Changed
 
