@@ -59,5 +59,15 @@
         }
     },
     "minimum-stability": "dev",
-    "prefer-stable": true
+    "prefer-stable": true,
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Vangelis\\RepoPHP\\Laravel\\RepoPHPServiceProvider"
+            ],
+            "aliases": {
+                "RepoPHP": "Vangelis\\RepoPHP\\Laravel\\Facades\\RepoPHP"
+            }
+        }
+    }
 }

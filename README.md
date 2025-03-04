@@ -179,6 +179,60 @@ If any error occurs, an appropriate error message will be shown in the console.
 ```bash  
 composer test
 ```  
+
+## Laravel Integration
+
+RepoPHP can be seamlessly integrated with Laravel applications.
+
+### Installation in Laravel
+
+Install the package via composer:
+
+```bash
+composer require vangelis/repophp --dev
+```
+
+The package will be auto-discovered by Laravel.
+
+### Publish Configuration
+
+Publish the configuration file:
+
+```bash
+php artisan vendor:publish --provider="Vangelis\RepoPHP\Laravel\RepoPHPServiceProvider" --tag="repophp-config"
+```
+
+### Usage in Laravel
+
+Use the Artisan command:
+
+```bash
+php artisan repophp:pack output.txt
+```
+
+Or use the Facade:
+
+```php
+<?php
+use Vangelis\RepoPHP\Laravel\Facades\RepoPHP;
+
+// Get an instance of RepoPHP from the container
+$repoPHP = app('repophp');
+$repoPHP->pack();
+
+// Or use the facade
+RepoPHP::pack();
+```
+
+All configuration options can be set in `config/repophp.php` or using environment variables:
+
+```
+REPOPHP_FORMAT=markdown
+REPOPHP_ENCODING=cl100k_base
+REPOPHP_COMPRESS=true
+REPOPHP_MAX_TOKENS=100000
+REPOPHP_INCREMENTAL=false
+```
   
 ## Changelog  
   
