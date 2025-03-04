@@ -6,3 +6,5 @@ parameters:
     excludePaths:
         - ./vendor/*
         - ./tests/*
+        - src/Laravel/*
+        - config/*
