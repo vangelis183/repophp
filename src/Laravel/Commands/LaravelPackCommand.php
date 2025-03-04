@@ -4,7 +4,6 @@ namespace Vangelis\RepoPHP\Laravel\Commands;
 
 use Illuminate\Console\Command;
 use Vangelis\RepoPHP\RepoPHP;
-use Vangelis\RepoPHP\Config\RepoPHPConfig;
 use Vangelis\RepoPHP\Services\GitRepositoryService;
 
 class LaravelPackCommand extends Command
@@ -35,7 +34,7 @@ class LaravelPackCommand extends Command
         $isRemote = $this->option('remote');
         $branch = $this->option('branch');
         $excludePatterns = $this->option('exclude') ?: config('repophp.exclude_patterns', []);
-        $respectGitignore = !$this->option('no-gitignore');
+        $respectGitignore = ! $this->option('no-gitignore');
         $compress = $this->option('compress') ?? config('repophp.compress', false);
         $maxTokens = (int)($this->option('max-tokens') ?? config('repophp.max_tokens_per_file', 0));
         $incremental = $this->option('incremental') ?? config('repophp.incremental', false);
@@ -58,19 +57,21 @@ class LaravelPackCommand extends Command
             }
 
             // Validate incremental mode requirements
-            if ($incremental && !$baseFilePath) {
+            if ($incremental && ! $baseFilePath) {
                 $this->error('Base file is required for incremental packing. Use --base-file option.');
+
                 return 1;
             }
 
-            if ($incremental && !file_exists($baseFilePath)) {
+            if ($incremental && ! file_exists($baseFilePath)) {
                 $this->error('Base file does not exist: ' . $baseFilePath);
+
                 return 1;
             }
 
             // Create storage directory if needed
             $outputDir = dirname($outputPath);
-            if (!file_exists($outputDir)) {
+            if (! file_exists($outputDir)) {
                 mkdir($outputDir, 0755, true);
             }
 
@@ -85,10 +86,11 @@ class LaravelPackCommand extends Command
 
                     if ($choice === 'cancel') {
                         $this->info('Operation cancelled.');
+
                         return 0;
                     }
                 } else {
-                    if (!$this->confirm("File '$outputPath' already exists. Do you want to overwrite it?", false)) {
+                    if (! $this->confirm("File '$outputPath' already exists. Do you want to overwrite it?", false)) {
                         // User chose not to overwrite, create a new filename with timestamp
                         $pathInfo = pathinfo($outputPath);
                         $newFilename = sprintf(
@@ -125,6 +127,7 @@ class LaravelPackCommand extends Command
             $repoPHP->pack();
 
             $this->info('Repository packed successfully.');
+
             return 0;
         } catch (\Exception $e) {
             $this->error('Error: ' . $e->getMessage());

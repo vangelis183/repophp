@@ -3,7 +3,6 @@
 namespace Vangelis\RepoPHP\Laravel;
 
 use Illuminate\Support\ServiceProvider;
-use Vangelis\RepoPHP\Command\PackCommand;
 use Vangelis\RepoPHP\Config\RepoPHPConfig;
 use Vangelis\RepoPHP\Laravel\Commands\LaravelPackCommand;
 
@@ -32,6 +31,7 @@ class RepoPHPServiceProvider extends ServiceProvider
         // Register singleton for RepoPHPConfig
         $this->app->singleton(RepoPHPConfig::class, function ($app) {
             $config = $app['config']->get('repophp', []);
+
             return new RepoPHPConfig(
                 $config['format'] ?? RepoPHPConfig::FORMAT_PLAIN,
                 $config['exclude_patterns'] ?? [],
